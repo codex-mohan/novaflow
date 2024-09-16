@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "novaflow-backend"
+version = "0.1.0"
+description = "NovaFlow: An AI Assistant with Image and Voice Recognition and Modular Node-Based UI"
+authors = ["codex-mohan <codexmohan@gmail.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
