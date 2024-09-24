@@ -45,12 +45,16 @@ const config: Config = {
   },
   plugins: [
     require("tailwindcss-animate"),
-    createThemes({
-      light: {
+    createThemes(({ light, dark }) => ({
+      light: light({
         primary: "steelblue",
         secondary: "darkblue",
-      },
-    }),
+      }),
+      dark: dark({
+        background: "#0a0d1b",
+        primary: "#0f1925",
+      }),
+    })),
   ],
 };
 export default config;
