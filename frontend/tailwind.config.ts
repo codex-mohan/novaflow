@@ -1,5 +1,6 @@
 import type { Config } from "tailwindcss";
 import { createThemes } from "tw-colors";
+import formsPlugin from "@tailwindcss/forms";
 
 const config: Config = {
   darkMode: ["class"],
@@ -10,6 +11,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      boxShadow: {
+        surround: "0px 0px 40px 15px",
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -44,17 +48,38 @@ const config: Config = {
     },
   },
   plugins: [
+    formsPlugin,
     require("tailwindcss-animate"),
-    createThemes(({ light, dark }) => ({
-      light: light({
-        primary: "steelblue",
-        secondary: "darkblue",
-      }),
-      dark: dark({
-        background: "#0a0d1b",
-        primary: "#0f1925",
-      }),
-    })),
+    createThemes({
+      light: {
+        primary: "#8B5CF6",
+        secondary: "#EC4899",
+        accent: "#EF4444",
+        background: "#FFFFFF",
+        text: "#1F2937",
+      },
+      dark: {
+        "primary-dark": "#B794F4",
+        "secondary-dark": "#F687B3",
+        "accent-dark": "#FCA5A5",
+        "background-dark": "#1F2937",
+        "text-dark": "#F3F4F6",
+      },
+    }),
+    function ({ addUtilities }) {
+      const newUtilities = {
+        ".backdrop-filter": {
+          "-webkit-backdrop-filter": "var(--tw-backdrop-filter)",
+          "backdrop-filter": "var(--tw-backdrop-filter)",
+        },
+        ".backdrop-blur-lg": {
+          "--tw-backdrop-blur": "blur(16px)",
+          "-webkit-backdrop-filter": "var(--tw-backdrop-filter)",
+          "backdrop-filter": "var(--tw-backdrop-filter)",
+        },
+      };
+      addUtilities(newUtilities, ["responsive", "hover"]);
+    },
   ],
 };
 export default config;
