@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, GithubIcon, Chrome } from "lucide-react";
+import { Mail, Lock, Github, Chrome } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 
 export default function LoginPage() {
@@ -38,22 +38,26 @@ export default function LoginPage() {
         <div className="p-8 md:w-1/2">
           <h2 className="text-3xl font-bold mb-6 text-purple-300">Sign In</h2>
           <div className="flex space-x-4 mb-6">
-            <button
+            <GradientButton
+              className="flex-1 flex items-center justify-center"
+              color="white"
+              fromColor="from-gray-800"
+              toColor="to-gray-700"
               onClick={handleGitHubLogin}
-              className="flex-1 flex items-center justify-center bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-800 hover:to-gray-950 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-600/50 relative overflow-hidden group"
             >
-              <GithubIcon size={20} className="mr-2" />
-              GitHub
-              <div className="absolute inset-0 h-full w-full bg-white/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-            </button>
-            <button
+              <Chrome size={20} className="mr-2" />
+              Github
+            </GradientButton>
+            <GradientButton
+              className="flex-1 flex items-center justify-center"
+              color="white"
+              fromColor="from-orange-500"
+              toColor="to-yellow-500"
               onClick={handleGoogleLogin}
-              className="flex-1 flex items-center justify-center bg-gradient-to-r from-red-500 to-yellow-500 hover:from-red-600 hover:to-yellow-600 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg hover:shadow-yellow-500/50 relative overflow-hidden group"
             >
               <Chrome size={20} className="mr-2" />
               Google
-              <div className="absolute inset-0 h-full w-full bg-white/20 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-            </button>
+            </GradientButton>
           </div>
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
