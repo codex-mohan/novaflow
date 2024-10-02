@@ -1,15 +1,29 @@
 [tool.poetry]
 name = "novaflow-api"
 version = "0.1.0"
-description = ""
+description = "Backend for NovaFlow"
 authors = ["codex-mohan <codexmohan@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
 fastapi = "^0.115.0"
+httpx = "^0.27.2"
+rich = "^13.9.1"
+typer = "^0.12.5"
+validations = "^0.1.1"
+torch = { version = "2.4.1", source = "pytorch" }
+torchvision = { version = "*", source = "pytorch" }
+torchaudio = { version = "*", source = "pytorch" }
+python-dotenv = "^1.0.1"
+uvicorn = "^0.31.0"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cu124"
+priority = "explicit"
