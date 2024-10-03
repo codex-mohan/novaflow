@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from novaflow_api.schemas.generate_request import GenerationRequest
+from novaflow_api.models.generate_request import GenerationRequest
 
 generation_route = APIRouter()
 
