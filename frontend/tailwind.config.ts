@@ -51,19 +51,19 @@ const config: Config = {
     formsPlugin,
     require("tailwindcss-animate"),
     createThemes({
-      light: {
-        primary: "#8B5CF6",
+      default: {
+        primary: "#9333EA",
         secondary: "#EC4899",
         accent: "#EF4444",
-        background: "#FFFFFF",
-        text: "#1F2937",
+        foreground: "#FFFFFF",
+        background: "#1F2937",
       },
       dark: {
         "primary-dark": "#B794F4",
         "secondary-dark": "#F687B3",
         "accent-dark": "#FCA5A5",
         "background-dark": "#1F2937",
-        "text-dark": "#F3F4F6",
+        "foreground-dark": "#F3F4F6",
       },
     }),
     function ({ addUtilities }) {

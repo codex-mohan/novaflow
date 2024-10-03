@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, Github, Chrome } from "lucide-react";
+import { Mail, Lock, Github, Chrome, GithubIcon } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 
 export default function LoginPage() {
@@ -40,22 +40,22 @@ export default function LoginPage() {
           <div className="flex space-x-4 mb-6">
             <GradientButton
               className="flex-1 flex items-center justify-center"
-              color="white"
+              color="text-foreground"
               fromColor="from-gray-800"
               toColor="to-gray-700"
               onClick={handleGitHubLogin}
             >
-              <Chrome size={20} className="mr-2" />
+              <GithubIcon size={20} className="mr-2" />
               Github
             </GradientButton>
             <GradientButton
               className="flex-1 flex items-center justify-center"
-              color="white"
+              color="text-foreground"
               fromColor="from-orange-500"
               toColor="to-yellow-500"
               onClick={handleGoogleLogin}
             >
-              <Chrome size={20} className="mr-2" />
+              <Chrome size={20} className="mr-2 text-text" />
               Google
             </GradientButton>
           </div>
@@ -64,7 +64,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-purple-300 opacity-30"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-purple-900 bg-opacity-50 text-purple-200">
+              <span className="px-2 bg-primary bg-opacity-50 text-purple-200">
                 Or continue with
               </span>
             </div>
@@ -122,7 +122,7 @@ export default function LoginPage() {
               type="submit"
               fromColor="from-purple-600"
               toColor="to-pink-600"
-              color="text-white"
+              color="text-foreground"
             >
               Sign In
             </GradientButton>
@@ -163,7 +163,7 @@ export default function LoginPage() {
           </p>
           <GradientButton
             type="button"
-            color="white"
+            color="text-foreground"
             fromColor="from-cyan-500"
             viaColor="via-cyan-550"
             toColor="to-lime-500"
