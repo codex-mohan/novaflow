@@ -15,7 +15,7 @@ const HomePage = () => {
     if (locale) {
       const timer = setTimeout(() => {
         setLoading(false);
-        router.replace(`/${locale}/projects`);
+        router.replace(`/${locale}/auth/login`);
       }, 3000); // Adjust the timeout duration as needed
 
       return () => clearTimeout(timer); // Cleanup the timer if the component unmounts
