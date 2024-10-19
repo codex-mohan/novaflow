@@ -9,5 +9,9 @@
   },
   "scripts": {
     "prepare": "husky"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.5",
+    "next-auth": "^4.24.8"
   }
 }
