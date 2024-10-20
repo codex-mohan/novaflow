@@ -2,11 +2,15 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
-export default function Component() {
+export default function SplashScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -16,9 +20,15 @@ export default function Component() {
       }
       await new Promise((resolve) => setTimeout(resolve, 500));
       setIsLoading(false);
+
+      if (status === "unauthenticated") {
+        router.push("/auth/login");
+      } else if (status === "authenticated") {
+        router.push("/dashboard");
+      }
     };
     checkAuthStatus();
-  }, []);
+  }, [status, router]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
