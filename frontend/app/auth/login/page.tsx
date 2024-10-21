@@ -9,7 +9,7 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [username, setUsername] = useState("");
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
@@ -18,23 +18,23 @@ export default function LoginPage() {
     e.preventDefault();
     const result = await signIn("credentials", {
       redirect: false,
-      username,
+      login,
       password,
     });
 
     if (result?.error) {
       console.error(result.error);
     } else {
-      router.push("/dashboard");
+      router.push("/projects");
     }
   };
 
   const handleGitHubLogin = () => {
-    signIn("github", { callbackUrl: "/dashboard" });
+    signIn("github", { callbackUrl: "/projects" });
   };
 
   const handleGoogleLogin = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
+    signIn("google", { callbackUrl: "/projects" });
   };
 
   return (
@@ -43,7 +43,7 @@ export default function LoginPage() {
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3 }}
-        className="relative bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-lg shadow-xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row"
+        className="relative bg-white bg-opacity-10 rounded-lg shadow-xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row"
       >
         <div className="p-8 md:w-1/2">
           <h2 className="text-3xl font-bold mb-6 text-purple-300">Sign In</h2>
@@ -82,19 +82,19 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label
-                htmlFor="username"
+                htmlFor="login"
                 className="block text-sm font-medium text-purple-200 mb-1"
               >
-                USERNAME
+                LOGIN
               </label>
               <div className="relative">
                 <input
                   type="text"
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="login"
+                  value={login}
+                  onChange={(e) => setLogin(e.target.value)}
                   className="w-full pl-10 pr-3 py-2 bg-purple-200 bg-opacity-10 border border-purple-300 border-opacity-30 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-white placeholder-purple-200 placeholder-opacity-60 transition-shadow duration-300 ease-in-out hover:shadow-lg hover:shadow-purple-500/30"
-                  placeholder="Enter your username"
+                  placeholder="Enter your email or username"
                   required
                 />
                 <Mail
@@ -164,7 +164,7 @@ export default function LoginPage() {
             </div>
           </form>
         </div>
-        <div className="bg-purple-300 bg-opacity-10 backdrop-filter backdrop-blur-lg p-8 md:w-1/2 flex flex-col justify-center items-center text-white">
+        <div className="bg-purple-300 bg-opacity-10 p-8 md:w-1/2 flex flex-col justify-center items-center text-white">
           <h2 className="text-3xl font-bold mb-4 text-pink-300">
             Welcome to NovaFlow
           </h2>
@@ -179,7 +179,7 @@ export default function LoginPage() {
             toColor="to-lime-500"
             onClick={() => router.push("/auth/signup")}
           >
-            Sign In
+            Sign Up
           </GradientButton>
         </div>
       </motion.div>

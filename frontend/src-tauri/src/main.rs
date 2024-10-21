@@ -3,5 +3,6 @@
 
 fn main() {
   println!("Starting Novaflow...");
+  std::env::set_var("WEBKIT_DISABLE_COMPOSITING_MODE", "1");
   app_lib::run();
 }
