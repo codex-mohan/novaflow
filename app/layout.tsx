@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
-
+import TitleBar from "@/components/ui/titlebar"; // Make sure this import path is correct
 import "./globals.css";
 
 const geistSans = localFont({
@@ -26,20 +26,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <html lang="en" suppressHydrationWarning>
-        <head />
-        <body>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            {children}
-          </ThemeProvider>
-        </body>
-      </html>
-    </>
+    <html lang="en" suppressHydrationWarning>
+      <head />
+      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TitleBar title="NovaFlow" />
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }

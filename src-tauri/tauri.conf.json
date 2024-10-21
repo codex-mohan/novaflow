@@ -41,16 +41,17 @@
   },
   "productName": "novaflow",
   "mainBinaryName": "novaflow",
-  "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "version": "1.0.1",
+  "identifier": "com.novaflow.app",
   "plugins": {},
   "app": {
     "windows": [
       {
         "fullscreen": false,
+        "decorations": false,
         "height": 600,
         "resizable": true,
-        "title": "novaflow",
+        "title": "Novaflow",
         "width": 800
       }
     ],
