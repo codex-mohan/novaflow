@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "novaflow",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "identifier": "com.novaflow.app",
   "build": {
     "frontendDist": "../out",
@@ -16,6 +16,14 @@
         "width": 1200,
         "height": 900,
         "resizable": true,
+        "fullscreen": false,
+        "decorations": false
+      },
+      {
+        "title": "novaflow-splashscreen",
+        "width": 900,
+        "height": 400,
+        "resizable": false,
         "fullscreen": false,
         "decorations": false
       }
