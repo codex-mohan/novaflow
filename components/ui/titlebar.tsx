@@ -1,9 +1,19 @@
+"use client";
+
 import React from "react";
-import { Minus, Maximize2, X, Square } from "lucide-react"; // Import Lucide Icons
+import { Minus, X, Square } from "lucide-react"; // Import Lucide Icons
+import { getCurrentWindow } from '@tauri-apps/api/window';
+
 
 const TitleBar: React.FC<{ title: string }> = ({ title }) => {
+  const appWindow = getCurrentWindow();
+
+  const handleMinimize = () => {console.log("Minimize"); appWindow.minimize();}
+  const handleMaximize = () => {console.log("Maximize"); appWindow.toggleMaximize();}
+  const handleClose = () => {console.log("Close"); appWindow.close();}
+
   return (
-    <div className="flex items-center justify-between px-4 h-10 bg-[#2D005E] text-white select-none">
+    <section className="flex items-center justify-between px-4 h-10 bg-[#2D005E] text-white select-none" data-tauri-drag-region>
       {/* Empty div to balance the centered title */}
       <div className="w-32"></div>
 
@@ -15,26 +25,21 @@ const TitleBar: React.FC<{ title: string }> = ({ title }) => {
       {/* Window controls */}
       <div className="flex space-x-2">
         {/* Minimize button */}
-        <div className="w-8 h-8 flex items-center justify-center">
+        <button className="w-8 h-8 flex items-center justify-center group" onClick={handleMinimize}>
           <Minus className="w-4 h-4" />
-        </div>
+        </button>
 
         {/* Maximize button */}
-        <div className="w-8 h-8 flex items-center justify-center">
-          <Maximize2 className="w-4 h-4" />
-        </div>
-
-        {/* Custom button for split view */}
-        <div className="w-8 h-8 flex items-center justify-center">
+        <button className="w-8 h-8 flex items-center justify-center group" onClick={handleMaximize}>
           <Square className="w-4 h-4" />
-        </div>
+        </button>
 
         {/* Close button */}
-        <div className="w-8 h-8 flex items-center justify-center">
+        <button className="w-8 h-8 flex items-center justify-center group" onClick={handleClose}>
           <X className="w-4 h-4" />
-        </div>
+        </button>
       </div>
-    </div>
+    </section>
   );
 };
 

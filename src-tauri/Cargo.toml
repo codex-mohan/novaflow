@@ -1,27 +1,42 @@
 [package]
-name = "novaflow"
-version = "1.0.0"
-description = "Novaflow - A modular AI Assistant"
-authors = ["you", "soumyadeep"]
+name = "novaflow-app"
+version = "1.0.1"
+description = "Novaflow - A modular AI Agent"
+authors = ["you"]
 license = "MIT"
 repository = ""
-default-run = "novaflow"
 edition = "2021"
 rust-version = "1.77.2"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+name = "app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build = { version = "2.0.1", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "2", features = [] }
-tauri-plugin-store = "2.1.0"
+log = "0.4"
+tauri = { version = "2.0.6", features = [] }
+tauri-plugin-log = "2.0.0-rc"
 
-[features]
-# this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
-# If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
-# DO NOT REMOVE!!
-custom-protocol = [ "tauri/custom-protocol" ]
+[profile.dev]
+opt-level = 0   # No optimization (faster builds)
+debug = true    # Enables debugging information
+lto = false     # Link Time Optimization disabled
+incremental = true # Enables incremental compilation to speed up rebuilds
+panic = 'unwind'  # Allow unwinding on panic (better for debugging)
+codegen-units = 256 # Increase code generation parallelism
+
+[profile.release]
+opt-level = 'z'     # Optimize for size
+lto = true          # Enable Link Time Optimization
+codegen-units = 1   # Reduce parallel code generation units to increase optimizations
+panic = 'abort'     # Abort on panic
+strip = true        # Strip symbols from binary
+debug = false       # Disable debug information
+incremental = false # Disable incremental compilation
