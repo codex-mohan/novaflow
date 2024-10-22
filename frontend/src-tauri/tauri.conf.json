@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "novaflow-ui",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.novaflow.app",
   "build": {
     "frontendDist": "../.next",
@@ -13,10 +13,13 @@
     "windows": [
       {
         "title": "Novaflow",
-        "width": 1600,
-        "height": 1980,
+        "width": 1500,
+        "height": 1200,
         "resizable": true,
-        "fullscreen": false
+        "decorations": true,
+        "transparent": false,
+        "theme": "Dark",
+        "windowEffects": null
       }
     ],
     "security": {

@@ -11,7 +11,7 @@ export default function ClientLayout({
 }) {
   return (
     <SessionProvider>
-      <ThemeProvider defaultTheme="default" attribute="class">
+      <ThemeProvider defaultTheme="dark" attribute="class">
         {children}
       </ThemeProvider>
     </SessionProvider>

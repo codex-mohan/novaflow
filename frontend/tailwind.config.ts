@@ -58,13 +58,6 @@ const config: Config = {
         foreground: "#FFFFFF",
         background: "#1F2937",
       },
-      dark: {
-        "primary-dark": "#B794F4",
-        "secondary-dark": "#F687B3",
-        "accent-dark": "#FCA5A5",
-        "background-dark": "#1F2937",
-        "foreground-dark": "#F3F4F6",
-      },
     }),
     function ({ addUtilities }) {
       const newUtilities = {

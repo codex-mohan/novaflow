@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const router = useRouter();
@@ -21,11 +23,13 @@ export default function SignUpPage() {
       return;
     }
 
+    const fullName = `${firstName} ${lastName}`;
+
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ username, fullName, email, password }),
       });
 
       if (response.ok) {
@@ -38,7 +42,7 @@ export default function SignUpPage() {
         if (result?.error) {
           console.error(result.error);
         } else {
-          router.push("/dashboard");
+          router.push("/projects");
         }
       } else {
         const error = await response.json();
@@ -51,11 +55,11 @@ export default function SignUpPage() {
   };
 
   const handleGitHubSignUp = () => {
-    signIn("github", { callbackUrl: "/dashboard" });
+    signIn("github", { callbackUrl: "/projects" });
   };
 
   const handleGoogleSignUp = () => {
-    signIn("google", { callbackUrl: "/dashboard" });
+    signIn("google", { callbackUrl: "/projects" });
   };
 
   return (
@@ -95,7 +99,7 @@ export default function SignUpPage() {
               <div className="w-full border-t border-purple-300 opacity-30"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-primary bg-opacity-50 text-purple-200">
+              <span className="px-2 bg-primary bg-opacity-50 backdrop-blur-3xl rounded-md text-purple-200">
                 Or sign up with email
               </span>
             </div>
@@ -124,6 +128,40 @@ export default function SignUpPage() {
                 />
               </div>
             </div>
+
+            <div className="mb-4 flex flex-row space-x-4">
+              <div>
+                <label className="block text-sm font-medium text-purple-200 mb-1">
+                  FIRST NAME
+                </label>
+                <div className="relative">
+                  <input
+                    id="firstname"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="w-full pl-3 pr-3 py-2 bg-purple-200 bg-opacity-10 border border-purple-300 border-opacity-30 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-white placeholder-purple-200 placeholder-opacity-60 transition-shadow duration-300 ease-in-out hover:shadow-lg hover:shadow-purple-500/30"
+                    placeholder="Enter your first name"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="">
+                <label className="block text-sm font-medium text-purple-200 mb-1">
+                  LAST NAME
+                </label>
+                <div className="relative">
+                  <input
+                    id="lastname"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="w-full pl-3 pr-3 py-2 bg-purple-200 bg-opacity-10 border border-purple-300 border-opacity-30 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-white placeholder-purple-200 placeholder-opacity-60 transition-shadow duration-300 ease-in-out hover:shadow-lg hover:shadow-purple-500/30"
+                    placeholder="Enter your last name"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="mb-4">
               <label
                 htmlFor="email"
