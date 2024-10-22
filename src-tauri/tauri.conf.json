@@ -43,20 +43,26 @@
   "mainBinaryName": "novaflow",
   "version": "1.0.1",
   "identifier": "com.novaflow.app",
-  "plugins": {},
-  "app": {
-    "windows": [
-      {
-        "fullscreen": false,
-        "decorations": false,
-        "height": 600,
-        "resizable": true,
-        "title": "Novaflow",
-        "width": 800
+  "plugins": {
+    "store": {
+      "default": {
+        "file": ".settings.dat"
       }
-    ],
-    "security": {
-      "csp": null
+    },
+    "app": {
+      "windows": [
+        {
+          "fullscreen": false,
+          "decorations": false,
+          "height": 960,
+          "resizable": true,
+          "title": "Novaflow",
+          "width": 1800
+        }
+      ],
+      "security": {
+        "csp": null
+      }
     }
   }
 }
