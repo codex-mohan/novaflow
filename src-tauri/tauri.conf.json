@@ -12,17 +12,19 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "novaflow",
         "width": 1200,
-        "height": 900,
+        "height": 1000,
         "resizable": true,
         "fullscreen": false,
         "decorations": false
       },
       {
-        "title": "novaflow-splashscreen",
+        "label": "splashscreen",
+        "url": "/splashscreen",
         "width": 900,
-        "height": 400,
+        "height": 450,
         "resizable": false,
         "fullscreen": false,
         "decorations": false

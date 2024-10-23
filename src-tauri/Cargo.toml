@@ -24,6 +24,9 @@ log = "0.4"
 tauri = { version = "2.0.6", features = [] }
 tauri-plugin-log = "2.0.0-rc"
 tokio = "1.41.0"
+candle-core = { git = "https://github.com/huggingface/candle.git", version = "0.7.2", features = ["cuda"] }
+mistralrs = { git = "https://github.com/EricLBuehler/mistral.rs.git", features = ["cuda"] }
+toml = "0.8.19"
 
 [profile.dev]
 opt-level = 0   # No optimization (faster builds)

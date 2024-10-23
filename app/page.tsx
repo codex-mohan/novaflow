@@ -1,9 +1,6 @@
-import Image from "next/image";
+import Router from "next/router";
+import SigninPage from "./auth/signin/page";
 
 export default function Home() {
-  return (
-    <div>
-      Just nothing here for now
-    </div>
-  );
+  return <SigninPage></SigninPage>;
 }

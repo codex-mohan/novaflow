@@ -256,7 +256,7 @@ export default function SignUpPage() {
             fromColor="from-cyan-500"
             viaColor="via-cyan-550"
             toColor="to-lime-500"
-            onClick={() => router.push("/auth/login")}
+            onClick={() => router.push("/auth/signin")}
           >
             Sign In
           </GradientButton>
