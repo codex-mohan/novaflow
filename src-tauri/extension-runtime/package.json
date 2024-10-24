@@ -1,0 +1,14 @@
+{
+  "name": "extension-runtime",
+  "module": "app.ts",
+  "type": "module",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "scripts": {
+    "build": "bun build app.ts --outdir ./dist"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
