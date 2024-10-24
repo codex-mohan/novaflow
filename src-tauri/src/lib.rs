@@ -1,4 +1,6 @@
-// Import functionalities we'll be using
+// declare and reference to modules
+pub mod cuda_setup;
+
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
 use tauri::{AppHandle, Manager, State};

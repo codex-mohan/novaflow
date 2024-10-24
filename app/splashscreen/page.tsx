@@ -9,14 +9,14 @@ export default function SplashScreen() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
+    let canvas = canvasRef?.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window?.innerWidth;
+    canvas.height = window?.innerHeight;
 
     const nodes: Node[] = [];
     const nodeCount = 150;
@@ -31,8 +31,8 @@ export default function SplashScreen() {
       color: string;
 
       constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
+        this.x = Math.random() * (canvas?.width ?? window.innerWidth);
+        this.y = Math.random() * (canvas?.height ?? window.innerHeight);
         this.size = Math.random() * 2 + 2;
         this.speedX = (Math.random() - 0.5) * 0.5;
         this.speedY = (Math.random() - 0.5) * 0.5;
@@ -45,8 +45,10 @@ export default function SplashScreen() {
         this.x += this.speedX;
         this.y += this.speedY;
 
-        if (this.x < 0 || this.x > canvas.width) this.speedX *= -1;
-        if (this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+        if (this.x < 0 || this.x > (canvas?.width ?? window.innerWidth))
+          this.speedX *= -1;
+        if (this.y < 0 || this.y > (canvas?.height ?? window.innerHeight))
+          this.speedY *= -1;
       }
 
       draw() {
@@ -62,9 +64,16 @@ export default function SplashScreen() {
       nodes.push(new Node());
     }
 
+    let animationFrameId: number;
+
     function animate() {
       if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(
+        0,
+        0,
+        canvas?.width ?? window.innerWidth,
+        canvas?.height ?? window.innerHeight
+      );
 
       for (let i = 0; i < nodes.length; i++) {
         nodes[i].update();
@@ -88,7 +97,7 @@ export default function SplashScreen() {
         }
       }
 
-      requestAnimationFrame(animate);
+      animationFrameId = requestAnimationFrame(animate);
     }
 
     animate();
@@ -116,7 +125,7 @@ export default function SplashScreen() {
     }, loadDuration / 10); // Update progress every 300ms
 
     return () => {
-      cancelAnimationFrame(animate);
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener("resize", handleResize);
       clearInterval(interval); // Clean up the interval on unmount
     };

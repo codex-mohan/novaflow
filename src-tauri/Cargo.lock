@@ -3146,6 +3146,7 @@ dependencies = [
  "candle-core 0.7.2 (git+https://github.com/huggingface/candle.git)",
  "log",
  "mistralrs",
+ "reqwest",
  "serde",
  "serde_json",
  "tauri",
