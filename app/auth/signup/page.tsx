@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { User, Lock, Mail, Github, Chrome } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
@@ -26,28 +25,7 @@ export default function SignUpPage() {
     const fullName = `${firstName} ${lastName}`;
 
     try {
-      const response = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, fullName, email, password }),
-      });
-
-      if (response.ok) {
-        const result = await signIn("credentials", {
-          redirect: false,
-          username,
-          password,
-        });
-
-        if (result?.error) {
-          console.error(result.error);
-        } else {
-          router.push("/projects");
-        }
-      } else {
-        const error = await response.json();
-        alert(error.message || "An error occurred during signup");
-      }
+      router.push("/projects");
     } catch (error) {
       console.error("Signup error:", error);
       alert("An error occurred during signup");
@@ -55,11 +33,11 @@ export default function SignUpPage() {
   };
 
   const handleGitHubSignUp = () => {
-    signIn("github", { callbackUrl: "/projects" });
+    console.log("");
   };
 
   const handleGoogleSignUp = () => {
-    signIn("google", { callbackUrl: "/projects" });
+    console.log("");
   };
 
   return (

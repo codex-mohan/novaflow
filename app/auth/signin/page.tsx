@@ -5,7 +5,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Lock, Chrome, Github } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 export default function SignInPage() {
@@ -15,26 +14,15 @@ export default function SignInPage() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const result = await signIn("credentials", {
-      redirect: false,
-      login,
-      password,
-    });
-
-    if (result?.error) {
-      console.error(result.error);
-    } else {
-      router.push("/projects");
-    }
+    console.log("submitting");
   };
 
   const handleGitHubLogin = () => {
-    signIn("github", { callbackUrl: "/projects" });
+    console.log("github login");
   };
 
   const handleGoogleLogin = () => {
-    signIn("google", { callbackUrl: "/projects" });
+    console.log("google login");
   };
 
   return (

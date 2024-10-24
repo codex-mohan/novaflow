@@ -14,20 +14,22 @@
       {
         "label": "main",
         "title": "novaflow",
-        "width": 1200,
-        "height": 1000,
+        "width": 1500,
+        "height": 1300,
         "resizable": true,
         "fullscreen": false,
-        "decorations": false
+        "decorations": false,
+        "visible": false
       },
       {
         "label": "splashscreen",
         "url": "/splashscreen",
         "width": 900,
-        "height": 450,
+        "height": 550,
         "resizable": false,
         "fullscreen": false,
-        "decorations": false
+        "decorations": false,
+        "visible": true
       }
     ],
     "security": {

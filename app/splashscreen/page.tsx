@@ -2,13 +2,11 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { getCurrentWindow } from "@tauri-apps/api/window"; // Import the Tauri API for window control
 
 export default function SplashScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const appWindow = getCurrentWindow();
 
   useEffect(() => {
     const canvas = canvasRef.current;
