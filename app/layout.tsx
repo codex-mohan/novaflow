@@ -40,12 +40,14 @@ export default function RootLayout({
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="default"
           enableSystem
           disableTransitionOnChange
         >
           <DynamicCustomTitleBar title="NovaFlow" icon="./favicon.ico" />
-          <div className="overflow-auto bg-transparent">{children}</div>
+          <div className="overflow-auto w-full h-full bg-primary">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

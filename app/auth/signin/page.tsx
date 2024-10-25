@@ -14,7 +14,8 @@ export default function SignInPage() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    console.log("submitting");
+    console.log("submitting...");
+    router.push("/nodeeditor");
   };
 
   const handleGitHubLogin = () => {
@@ -30,7 +31,7 @@ export default function SignInPage() {
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        transition={{ duration: 0.5 }}
         className="relative bg-white bg-opacity-10 rounded-lg shadow-xl overflow-hidden max-w-4xl w-full flex flex-col md:flex-row"
       >
         <div className="p-8 md:w-1/2">
@@ -38,7 +39,7 @@ export default function SignInPage() {
           <div className="flex space-x-4 mb-6">
             <GradientButton
               className="flex-1 flex items-center justify-center"
-              color="text-foreground"
+              color="text-font"
               fromColor="from-gray-800"
               toColor="to-gray-700"
               onClick={handleGitHubLogin}
@@ -48,12 +49,12 @@ export default function SignInPage() {
             </GradientButton>
             <GradientButton
               className="flex-1 flex items-center justify-center"
-              color="text-foreground"
+              color="text-font"
               fromColor="from-orange-500"
               toColor="to-yellow-500"
               onClick={handleGoogleLogin}
             >
-              <Chrome size={20} className="mr-2 text-text" />
+              <Chrome size={20} className="mr-2 text-font" />
               Google
             </GradientButton>
           </div>
@@ -61,7 +62,7 @@ export default function SignInPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-purple-300 opacity-30"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
+            <div className="relative flex justify-center text-sm select-none">
               <span className="px-2 bg-primary bg-opacity-50 text-purple-200">
                 Or continue with
               </span>
@@ -120,7 +121,7 @@ export default function SignInPage() {
               type="submit"
               fromColor="from-purple-600"
               toColor="to-pink-600"
-              color="text-foreground"
+              color="text-font"
             >
               Sign In
             </GradientButton>
@@ -152,7 +153,7 @@ export default function SignInPage() {
             </div>
           </form>
         </div>
-        <div className="bg-purple-300 bg-opacity-10 p-8 md:w-1/2 flex flex-col justify-center items-center text-white">
+        <div className="bg-purple-300 bg-opacity-10 p-8 md:w-1/2 flex flex-col justify-center items-center text-font overflow-visible">
           <h2 className="text-3xl font-bold mb-4 text-pink-300">
             Welcome to NovaFlow
           </h2>
@@ -161,7 +162,7 @@ export default function SignInPage() {
           </p>
           <GradientButton
             type="button"
-            color="text-foreground"
+            color="text-font"
             fromColor="from-cyan-500"
             viaColor="via-cyan-550"
             toColor="to-lime-500"

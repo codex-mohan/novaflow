@@ -16,7 +16,7 @@ export default function QueueBar() {
 
   return (
     <Draggable handle=".drag-handle">
-      <div className="fixed top-4 left-4 bg-gray-900 text-white rounded-lg shadow-lg flex items-center space-x-2 p-1">
+      <div className="fixed top-4 left-4 bg-primary text-white rounded-lg shadow-lg flex items-center space-x-2 p-1">
         <div className="drag-handle flex flex-col items-center justify-center px-1 cursor-move">
           <div className="w-1 h-1 bg-gray-500 rounded-full mb-1"></div>
           <div className="w-1 h-1 bg-gray-500 rounded-full mb-1"></div>

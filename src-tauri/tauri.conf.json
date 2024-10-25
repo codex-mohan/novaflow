@@ -6,8 +6,8 @@
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "bun run dev",
-    "beforeBuildCommand": "bun run build"
+    "beforeDevCommand": "bun --bun run dev",
+    "beforeBuildCommand": "bun --bun run build"
   },
   "app": {
     "windows": [
@@ -45,9 +45,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "externalBin": [
-      "extension-runtime/extension-runtime"
     ]
   }
 }

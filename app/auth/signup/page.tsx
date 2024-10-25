@@ -53,7 +53,7 @@ export default function SignUpPage() {
           <div className="flex space-x-4 mb-6">
             <GradientButton
               className="flex-1 flex items-center justify-center"
-              color="text-foreground"
+              color="text-font"
               fromColor="from-gray-800"
               toColor="to-gray-700"
               onClick={handleGitHubSignUp}
@@ -63,7 +63,7 @@ export default function SignUpPage() {
             </GradientButton>
             <GradientButton
               className="flex-1 flex items-center justify-center"
-              color="text-foreground"
+              color="text-font"
               fromColor="from-orange-500"
               toColor="to-yellow-500"
               onClick={handleGoogleSignUp}
@@ -215,7 +215,7 @@ export default function SignUpPage() {
               type="submit"
               fromColor="from-purple-600"
               toColor="to-pink-600"
-              color="text-foreground"
+              color="text-font"
             >
               Sign Up
             </GradientButton>
@@ -230,7 +230,7 @@ export default function SignUpPage() {
           </p>
           <GradientButton
             type="button"
-            color="text-foreground"
+            color="text-font"
             fromColor="from-cyan-500"
             viaColor="via-cyan-550"
             toColor="to-lime-500"
