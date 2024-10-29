@@ -7,17 +7,6 @@ import {
   type Edge,
 } from "@xyflow/react";
 
-const buttonStyle = {
-  width: 20,
-  height: 20,
-  background: "#eee",
-  border: "1px solid #fff",
-  cursor: "pointer",
-  borderRadius: "50%",
-  fontSize: "12px",
-  lineHeight: 1,
-};
-
 type ButtonEdgeData = {};
 
 export type ButtonEdge = Edge<ButtonEdgeData>;
@@ -52,17 +41,29 @@ export default function ButtonEdge({
       <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
       <EdgeLabelRenderer>
         <div
+          className={`
+            absolute text-xs nodrag nopan
+            transform -translate-x-1/2 -translate-y-1/2
+          `}
           style={{
-            position: "absolute",
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-            fontSize: 12,
-            // everything inside EdgeLabelRenderer has no pointer events by default
-            // if you have an interactive element, set pointer-events: all
-            pointerEvents: "all",
+            // We need to keep this style prop for dynamic positioning
           }}
-          className="nodrag nopan"
         >
-          <button style={buttonStyle} onClick={onEdgeClick}>
+          <button
+            onClick={onEdgeClick}
+            className={`
+              w-5 h-5 
+              bg-gray-200 
+              border border-white 
+              rounded-full 
+              cursor-pointer 
+              text-xs 
+              leading-none
+              hover:bg-gray-300
+              transition-colors
+            `}
+          >
             ×
           </button>
         </div>

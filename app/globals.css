@@ -41,9 +41,46 @@ body {
   margin: 0;
   font-family: sans-serif;
   box-sizing: border-box;
+  --xy-minimap-background-color-default: @apply bg-base;
 }
 
 #app {
   width: 100vw;
   height: 100vh;
+}
+
+.react-flow__minimap {
+  @apply bg-base !important;
+}
+
+.react-flow__minimap-mask {
+  @apply fill-node-bg !important;
+}
+
+.react-flow__minimap-node {
+  @apply bg-base fill-node-bg stroke-none !important;
+}
+
+.react-flow__controls {
+  @apply bg-base border-edge;
+}
+
+.react-flow__controls-button {
+  @apply bg-node-bg border-edge text-font hover:bg-node-bg/25 transition-colors !important;
+}
+
+.react-flow__controls-button svg {
+  @apply fill-font;
+}
+
+.react-flow__attribution {
+  @apply bg-transparent text-font;
+}
+
+.react-flow__background {
+  @apply bg-base;
+}
+
+.react-flow__panel {
+  @apply text-font;
 }

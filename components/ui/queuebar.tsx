@@ -16,43 +16,43 @@ export default function QueueBar() {
 
   return (
     <Draggable handle=".drag-handle">
-      <div className="fixed top-4 left-4 bg-base text-white rounded-lg shadow-lg flex items-center space-x-2 p-1">
+      <div className="fixed top-4 left-4 bg-node-bg text-font rounded-lg shadow-lg flex items-center space-x-2 p-1">
         <div className="drag-handle flex flex-col items-center justify-center px-1 cursor-move">
-          <div className="w-1 h-1 bg-gray-500 rounded-full mb-1"></div>
-          <div className="w-1 h-1 bg-gray-500 rounded-full mb-1"></div>
-          <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
+          <div className="w-2 h-2 bg-font rounded-full mb-1"></div>
+          <div className="w-2 h-2 bg-font rounded-full mb-1"></div>
+          <div className="w-2 h-2 bg-font rounded-full"></div>
         </div>
-        <button className="bg-blue-500 text-white px-3 py-1 rounded-md flex items-center space-x-1">
-          <Play size={16} />
+        <button className="bg-secondary text-font px-3 py-2 rounded-md flex items-center space-x-2">
+          <Play size={23} />
           <span>Queue</span>
-          <ChevronDown size={16} />
+          <ChevronDown size={23} />
         </button>
         <div className="flex items-center space-x-1">
           <span className="text-lg font-semibold">{count}</span>
           <div className="flex flex-col">
             <button
               onClick={() => setCount(count + 1)}
-              className="text-gray-400 hover:text-white"
+              className="text-font/70 hover:text-font"
             >
-              <ChevronUp size={16} />
+              <ChevronUp size={23} />
             </button>
             <button
               onClick={() => setCount(Math.max(0, count - 1))}
-              className="text-gray-400 hover:text-white"
+              className="text-font/70 hover:text-font"
             >
-              <ChevronDown size={16} />
+              <ChevronDown size={23} />
             </button>
           </div>
         </div>
-        <div className="flex items-center space-x-2 text-gray-400">
-          <button className="hover:text-white">
-            <X size={16} />
+        <div className="flex items-center space-x-2 text-font/70">
+          <button className="hover:text-font">
+            <X size={23} />
           </button>
-          <button className="hover:text-white">
-            <Square size={16} />
+          <button className="hover:text-font">
+            <Square size={23} />
           </button>
-          <button className="hover:text-white">
-            <RotateCcw size={16} />
+          <button className="hover:text-font">
+            <RotateCcw size={23} />
           </button>
         </div>
       </div>

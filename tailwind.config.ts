@@ -11,6 +11,13 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        "node-title": "0.625rem", // 10px
+        "node-content": "0.5rem", // 8px
+      },
+      padding: {
+        content: "4% 8%",
+      },
       boxShadow: {
         surround: "0px 0px 40px 15px",
       },
@@ -52,14 +59,25 @@ const config: Config = {
     require("tailwindcss-animate"),
     createThemes({
       dark: {
-        base: "#13071f",
+        base: "#181826",
+        "base-hover": "#2f2f4b",
         primary: "#9333EA",
         secondary: "#EC4899",
         tertiary: "#EF4444",
         edge: "#141924",
-        font: "#FFF",
+        font: "#f0d5ff",
+        "node-bg": "#27273f",
       },
-      light: {},
+      light: {
+        base: "#f0d5ff",
+        "base-hover": "#2f2f4b",
+        primary: "#9333EA",
+        secondary: "#EC4899",
+        tertiary: "#EF4444",
+        edge: "#141924",
+        font: "#181826",
+        "node-bg": "#f0d5ff",
+      },
     }),
     function ({
       addUtilities,

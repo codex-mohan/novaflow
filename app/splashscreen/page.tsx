@@ -132,7 +132,7 @@ export default function SplashScreen() {
   }, []);
 
   return (
-    <div className="relative p-5 m-2 flex flex-col items-center justify-center min-h-screen overflow-hidden bg-background">
+    <div className="relative p-5 m-2 flex flex-col items-center justify-center min-h-screen overflow-hidden bg-base">
       <canvas ref={canvasRef} className="absolute inset-0 z-0" />
       <motion.div
         initial={{ scale: 0.5, opacity: 0 }}

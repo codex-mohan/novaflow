@@ -45,6 +45,7 @@
     "react-hook-form": "^7.53.1",
     "react-i18next": "^15.1.0",
     "recharts": "^2.13.0",
+    "styled-components": "^6.1.13",
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "tw-colors": "^3.3.2",

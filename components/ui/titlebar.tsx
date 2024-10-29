@@ -30,7 +30,7 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
   if (isSplashScreen !== "/splashscreen") {
     return (
       <section
-        className="flex items-center justify-between h-10 bg-base text-white select-none z-50"
+        className="flex items-center justify-between h-10 bg-base text-font select-none z-50"
         data-tauri-drag-region
       >
         <Image src={icon} alt={title} width={64} height={64} />
@@ -42,19 +42,19 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
 
         <div className="flex space-x-2">
           <button
-            className="w-8 h-8 flex items-center justify-center group hover:bg-gray-700 transition-all duration-300 ease-in-out"
+            className="w-8 h-8 flex items-center justify-center group hover:bg-base-hover transition-all duration-300 ease-in-out"
             onClick={() => console.log("Settings")}
           >
             <Settings2 className="w-4 h-4" />
           </button>
           <button
-            className="w-8 h-8 flex items-center justify-center group hover:bg-gray-700 transition-all duration-300 ease-in-out"
+            className="w-8 h-8 flex items-center justify-center group hover:bg-base-hover transition-all duration-300 ease-in-out"
             onClick={handleMinimize}
           >
             <Minus className="w-4 h-4" />
           </button>
           <button
-            className="w-8 h-8 flex items-center justify-center group hover:bg-gray-700 transition-all duration-300 ease-in-out"
+            className="w-8 h-8 flex items-center justify-center group hover:bg-base-hover transition-all duration-300 ease-in-out"
             onClick={handleMaximize}
           >
             <Square className="w-4 h-4" />
