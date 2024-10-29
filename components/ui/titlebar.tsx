@@ -30,10 +30,10 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
   if (isSplashScreen !== "/splashscreen") {
     return (
       <section
-        className="flex items-center justify-between h-10 bg-primary text-white select-none z-50"
+        className="flex items-center justify-between h-10 bg-base text-white select-none z-50"
         data-tauri-drag-region
       >
-        <Image src={icon} alt="Novaflow" width={64} height={64} />
+        <Image src={icon} alt={title} width={64} height={64} />
         <div className="w-32"></div>
 
         <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">

@@ -2,9 +2,14 @@ import type { BuiltInNode, Node, NodeTypes } from "@xyflow/react";
 import PositionLoggerNode, {
   type PositionLoggerNode as PositionLoggerNodeType,
 } from "./PositionLoggerNode";
+import NormalNode, { type NormalNode as NormalNodeType } from "./NormalNode";
 
 export const initialNodes = [
-  { id: "a", type: "input", position: { x: 0, y: 0 }, data: { label: "wire" } },
+  {
+    id: "a",
+    position: { x: 0, y: 0 },
+    data: { label: "wire" },
+  },
   {
     id: "b",
     type: "position-logger",
@@ -23,7 +28,11 @@ export const initialNodes = [
 export const nodeTypes = {
   "position-logger": PositionLoggerNode,
   // Add any of your custom nodes here!
+  normal: NormalNode,
 } satisfies NodeTypes;
 
 // Append the types of you custom edges to the BuiltInNode type
-export type CustomNodeType = BuiltInNode | PositionLoggerNodeType;
+export type CustomNodeType =
+  | BuiltInNode
+  | PositionLoggerNodeType
+  | NormalNodeType;

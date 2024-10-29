@@ -12,12 +12,12 @@ import {
   type OnConnect,
 } from "@xyflow/react";
 
-import "@xyflow/react/dist/style.css";
-
 import { initialNodes, nodeTypes, type CustomNodeType } from "./nodes";
 import { initialEdges, edgeTypes, type CustomEdgeType } from "./edges";
 
-export default function Nodelayout() {
+import "@xyflow/react/dist/style.css";
+
+export default function NodeLayout() {
   const [nodes, setNodes, onNodesChange] = useNodesState<CustomNodeType>(
     initialNodes as CustomNodeType[]
   );
@@ -37,6 +37,7 @@ export default function Nodelayout() {
       edgeTypes={edgeTypes}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
+      colorMode="dark"
       fitView
     >
       <Background />

@@ -19,7 +19,7 @@ const config: Config = {
         foreground: "var(--foreground)",
       },
       borderRadius: {
-        lg: "var(--radius)",
+        lg: "20px",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
@@ -51,13 +51,15 @@ const config: Config = {
     formsPlugin,
     require("tailwindcss-animate"),
     createThemes({
-      default: {
-        secondary: "#9333EA",
-        tertiary: "#EC4899",
-        accent: "#EF4444",
+      dark: {
+        base: "#13071f",
+        primary: "#9333EA",
+        secondary: "#EC4899",
+        tertiary: "#EF4444",
+        edge: "#141924",
         font: "#FFF",
-        primary: "#13032A",
       },
+      light: {},
     }),
     function ({
       addUtilities,

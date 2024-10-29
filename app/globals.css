@@ -35,3 +35,15 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
+html,
+body {
+  margin: 0;
+  font-family: sans-serif;
+  box-sizing: border-box;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+}
