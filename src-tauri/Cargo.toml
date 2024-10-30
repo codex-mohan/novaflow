@@ -6,7 +6,7 @@ authors = ["you"]
 license = "MIT"
 repository = ""
 edition = "2021"
-rust-version = "1.77.2"
+rust-version = "1.82.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -25,9 +25,13 @@ tauri = { version = "2.0.6", features = [] }
 tauri-plugin-log = "2.0.0-rc"
 tokio = "1.41.0"
 candle-core = { git = "https://github.com/huggingface/candle.git", version = "0.7.2", features = ["cuda"] }
-mistralrs = { git = "https://github.com/EricLBuehler/mistral.rs.git", features = ["cuda"] }
+mistralrs = { git = "https://github.com/EricLBuehler/mistral.rs.git"}
 toml = "0.8.19"
 reqwest = "0.12.8"
+rocket = "0.5.1"
+anyhow = "1.0.91"
+# all features except avif. for msrv
+image = { version = "0.25.1", default-features = false, features = ['bmp', 'dds', 'exr', 'ff', 'gif', 'hdr', 'ico', 'jpeg', 'png', 'pnm', 'qoi', 'tga', 'tiff', 'webp'] }
 
 [profile.dev]
 opt-level = 0   # No optimization (faster builds)
@@ -45,3 +49,5 @@ panic = 'abort'     # Abort on panic
 strip = true        # Strip symbols from binary
 debug = false       # Disable debug information
 incremental = false # Disable incremental compilation
+# rustflags = ["-Cdebuginfo=0", "-Zthreads=12"] # Better compile performance.
+
