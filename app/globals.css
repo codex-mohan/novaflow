@@ -54,11 +54,11 @@ body {
 }
 
 .react-flow__minimap-mask {
-  @apply fill-node-bg !important;
+  @apply fill-node !important;
 }
 
 .react-flow__minimap-node {
-  @apply bg-base fill-node-bg stroke-none !important;
+  @apply bg-base fill-node stroke-none !important;
 }
 
 .react-flow__controls {
@@ -66,7 +66,7 @@ body {
 }
 
 .react-flow__controls-button {
-  @apply bg-node-bg border-edge text-font hover:bg-node-bg/25 transition-colors !important;
+  @apply bg-node border-edge text-font hover:bg-node/25 transition-colors !important;
 }
 
 .react-flow__controls-button svg {
@@ -82,5 +82,41 @@ body {
 }
 
 .react-flow__panel {
+  @apply text-font;
+}
+
+.dark .react-flow__minimap {
+  @apply bg-base !important;
+}
+
+.dark .react-flow__minimap-mask {
+  @apply fill-node !important;
+}
+
+.dark .react-flow__minimap-node {
+  @apply bg-base fill-node stroke-none !important;
+}
+
+.dark .react-flow__controls {
+  @apply bg-base border-edge;
+}
+
+.dark .react-flow__controls-button {
+  @apply bg-node border-edge text-font hover:bg-node/25 transition-colors !important;
+}
+
+.dark .react-flow__controls-button svg {
+  @apply fill-font;
+}
+
+.dark .react-flow__attribution {
+  @apply bg-transparent text-font;
+}
+
+.dark .react-flow__background {
+  @apply bg-base;
+}
+
+.dark .react-flow__panel {
   @apply text-font;
 }

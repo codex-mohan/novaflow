@@ -1,16 +1,18 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Minus, X, Square, Settings2 } from "lucide-react"; // Import Lucide Icons
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
+import { SettingsDialog } from "../../dialogs/SettingsModal";
 
 const TitleBar: React.FC<{ title: string; icon: string }> = ({
   title,
   icon,
 }) => {
   const appWindow = getCurrentWindow();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleMinimize = () => {
     console.log("Minimize");
@@ -23,6 +25,11 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
   const handleClose = () => {
     console.log("Close");
     appWindow.close();
+  };
+
+  const openSettings = () => {
+    console.log("opening settings...");
+    setSettingsOpen(true);
   };
 
   const isSplashScreen = usePathname();
@@ -43,7 +50,7 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
         <div className="flex space-x-2">
           <button
             className="w-8 h-8 flex items-center justify-center group hover:bg-base-hover transition-all duration-300 ease-in-out"
-            onClick={() => console.log("Settings")}
+            onClick={openSettings}
           >
             <Settings2 className="w-4 h-4" />
           </button>
@@ -66,6 +73,7 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
             <X className="w-4 h-4" />
           </button>
         </div>
+        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       </section>
     );
   } else {

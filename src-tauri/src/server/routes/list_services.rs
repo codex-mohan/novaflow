@@ -1,6 +1,9 @@
-use rocket::get;
+use axum::{routing::get, Router};
 
-#[get("/list-services")]
-pub fn list_services() -> &'static str {
-    "Welcome to the services page"
+async fn list_services() -> &'static str {
+    return "list services";
+}
+
+pub fn list_services_route() -> Router {
+    Router::new().route("/list_services", get(list_services))
 }

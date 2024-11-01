@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { useState, useCallback } from "react";
 import {
   Background,
   Controls,
@@ -10,18 +10,23 @@ import {
   useNodesState,
   useEdgesState,
   type OnConnect,
+  type ColorMode,
 } from "@xyflow/react";
 
 import { initialNodes, nodeTypes } from "../nodes";
 import { initialEdges, edgeTypes } from "../edges";
+import { useTheme } from "next-themes";
 
 import "@xyflow/react/dist/style.css";
+import "@/app/globals.css";
 
 export default function NodeLayout() {
   const proOptions = { hideAttribution: true };
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  const setColorMode = useTheme();
 
   const onConnect = useCallback<OnConnect>(
     (params) => setEdges((eds) => addEdge(params, eds)),
@@ -39,6 +44,7 @@ export default function NodeLayout() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         proOptions={proOptions}
+        colorMode="dark"
         fitView
         attributionPosition="bottom-right"
       >

@@ -1,6 +1,9 @@
-use rocket::get;
+use axum::{routing::get, Router};
 
-#[get("/generate")]
-pub fn generate() -> &'static str {
-    "Welcome to the Generate page"
+async fn generate() -> &'static str {
+    "Welcome to the generate page"
+}
+
+pub fn generate_route() -> Router {
+    Router::new().route("/generate", get(generate))
 }

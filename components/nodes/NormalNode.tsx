@@ -6,7 +6,7 @@ import { NormalNode as NormalNodeType } from "@/types/nodes";
 
 function NormalNode({ data }: NodeProps<NormalNodeType>) {
   return (
-    <div className="shadow-md rounded-md bg-node-bg text-font border-1 border-node-bg/80">
+    <div className="shadow-md rounded-md bg-node border-1 border-node/80">
       <div className="rounded-t-md px-2 bg-gradient-to-r from-primary via-secondary to-tertiary text-sm">
         <span className="text-node-title">{data.title}</span>
       </div>
@@ -17,12 +17,12 @@ function NormalNode({ data }: NodeProps<NormalNodeType>) {
       <Handle
         type="target"
         position={Position.Right}
-        className="w-16 !bg-gradient-to-r from-primary via-secondary to-tertiary"
+        className="w-2 h-2 rounded-full !bg-gradient-to-r from-primary via-secondary to-tertiary"
       />
       <Handle
         type="source"
         position={Position.Left}
-        className="w-16 !bg-gradient-to-r from-primary via-secondary to-tertiary"
+        className="w-2 h-2 rounded-full !bg-gradient-to-r from-primary via-secondary to-tertiary"
       />
     </div>
   );

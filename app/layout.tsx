@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 const DynamicCustomTitleBar = dynamic(
-  () => import("@/components/ui/titlebar"),
+  () => import("@/components/ui/TitleBar"),
   {
     ssr: false,
   }

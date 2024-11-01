@@ -1,11 +1,11 @@
-#[macro_use]
-extern crate rocket;
-
 // declare reference to modules
 pub mod cuda_setup;
 pub mod server;
 pub mod utils;
 
+use axum;
+use server::handlers;
+use std::net::SocketAddr;
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
 use tauri::{AppHandle, Emitter, EventTarget, Manager, State};
@@ -96,10 +96,15 @@ async fn set_complete(
 async fn setup_backend(app: AppHandle) -> Result<(), ()> {
     // Setup the actual backend and fake loading for  3 seconds
     tauri::async_runtime::spawn(async move {
-        let _rocket_server = rocket::build()
-            .mount("/", server::routes::all_routes())
-            .launch()
-            .await;
+        let app =
+            server::routes::all_routes().fallback(server::handlers::not_found::not_found_handler);
+
+        // Start the Axum server
+        let addr = SocketAddr::from(([127, 0, 0, 1], 8920));
+        println!("Axum server listening on {}", addr);
+        let listener = tokio::net::TcpListener::bind("0.0.0.0:8920").await.unwrap();
+        axum::serve(listener, app).await.unwrap();
+        println!("Axom Server started");
     });
     println!("sleeping for 8 seconds");
     sleep(Duration::from_secs(8)).await;

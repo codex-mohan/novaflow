@@ -23,15 +23,16 @@ serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 tauri = { version = "2.0.6", features = [] }
 tauri-plugin-log = "2.0.0-rc"
-tokio = "1.41.0"
+tokio = {version = "1.41.0", features = ["rt", "rt-multi-thread", "parking_lot", "sync", "signal"] }
 candle-core = { git = "https://github.com/huggingface/candle.git", version = "0.7.2", features = ["cuda"] }
 mistralrs = { git = "https://github.com/EricLBuehler/mistral.rs.git"}
 toml = "0.8.19"
 reqwest = "0.12.8"
-rocket = "0.5.1"
 anyhow = "1.0.91"
 # all features except avif. for msrv
 image = { version = "0.25.1", default-features = false, features = ['bmp', 'dds', 'exr', 'ff', 'gif', 'hdr', 'ico', 'jpeg', 'png', 'pnm', 'qoi', 'tga', 'tiff', 'webp'] }
+axum = "0.7.7"
+surrealdb = { version = "2.0.4", features = ["kv-rocksdb"] }
 
 [profile.dev]
 opt-level = 0   # No optimization (faster builds)
@@ -39,7 +40,7 @@ debug = true    # Enables debugging information
 lto = false     # Link Time Optimization disabled
 incremental = true # Enables incremental compilation to speed up rebuilds
 panic = 'unwind'  # Allow unwinding on panic (better for debugging)
-codegen-units = 256 # Increase code generation parallelism
+codegen-units = 16 # Increase code generation parallelism
 
 [profile.release]
 opt-level = 'z'     # Optimize for size

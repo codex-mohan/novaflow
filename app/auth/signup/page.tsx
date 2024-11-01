@@ -230,7 +230,7 @@ export default function SignUpPage() {
           </p>
           <GradientButton
             type="button"
-            color="text-font"
+            color="text-purple-200"
             fromColor="from-cyan-500"
             viaColor="via-cyan-550"
             toColor="to-lime-500"

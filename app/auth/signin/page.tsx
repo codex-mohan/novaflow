@@ -62,8 +62,8 @@ export default function SignInPage() {
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-purple-300 opacity-30"></div>
             </div>
-            <div className="relative flex justify-center text-sm select-none">
-              <span className="px-2 bg-primary bg-opacity-50 text-purple-200">
+            <div className="relative flex justify-center text-sm select-none rounded-md">
+              <span className="px-2 bg-secondary bg-opacity-50 backdrop-blur-3xl rounded-md text-purple-200">
                 Or continue with
               </span>
             </div>
@@ -162,7 +162,7 @@ export default function SignInPage() {
           </p>
           <GradientButton
             type="button"
-            color="text-font"
+            color="text-white-200"
             fromColor="from-cyan-500"
             viaColor="via-cyan-550"
             toColor="to-lime-500"
