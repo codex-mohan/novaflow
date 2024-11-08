@@ -1,12 +1,14 @@
+use muddy::{m, muddy_init};
 use std::process::Command;
 
 #[cfg(target_os = "windows")]
 async fn install_cuda() {
-    println!("checking for cuda installation...");
+    println!("{}", m!("checking for cuda installation..."));
 }
 
 #[cfg(target_os = "linux")]
 async fn install_cuda() {
+    muddy_init!();
     // check what distro we're running on
     let output = Command::new("lsb_release")
         .arg("-a")
@@ -14,9 +16,10 @@ async fn install_cuda() {
         .expect("failed to execute process");
     let distro = String::from_utf8_lossy(&output.stdout);
     let distro = distro.trim();
-    println!("Checking for CUDA installation on \n{}", distro);
+    println!("Distro Found: {}", distro);
 
     // check if cuda is already installed
+    println!("{}", m!("checking for cuda installation..."));
     let output = Command::new("nvidia-smi")
         .arg("--query-gpu=name")
         .output()
@@ -24,7 +27,7 @@ async fn install_cuda() {
     let installed = String::from_utf8_lossy(&output.stdout);
     let installed = installed.trim();
     if installed != "" {
-        println!("CUDA already installed on {}", distro);
+        println!("{}", m!("CUDA already installed."));
         return;
     }
 
@@ -75,7 +78,7 @@ async fn install_cuda() {
             .output()
             .expect("failed to execute process");
     } else {
-        println!("Unknown distro: {}", distro);
+        println!("{} {}", m!("Unknown distro: {}"), distro);
     }
 }
 

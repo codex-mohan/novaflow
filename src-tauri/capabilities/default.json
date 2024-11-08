@@ -15,6 +15,47 @@
     "core:window:allow-theme",
     "core:window:allow-set-theme",
     "core:window:allow-minimize",
-    "core:window:default"
+    "core:window:default",
+    "log:default",
+    "fs:default",
+    "fs:allow-read",
+    "fs:allow-write",
+    "fs:allow-open",
+    "fs:allow-write-file",
+    "fs:allow-read-file",
+    "fs:allow-read-dir",
+    "fs:allow-write-text-file",
+    "fs:allow-create",
+    "fs:allow-read-text-file",
+    "fs:allow-remove",
+    "fs:allow-rename",
+    "fs:allow-video-read",
+    "fs:allow-video-write",
+    "fs:allow-video-meta",
+    "fs:allow-audio-read",
+    "fs:allow-audio-write",
+    "fs:allow-audio-meta",
+    "fs:allow-picture-meta",
+    "fs:allow-picture-write",
+    "fs:allow-picture-read",
+    "fs:allow-copy-file",
+    "fs:allow-home-read",
+    "fs:allow-home-write",
+    {
+      "identifier": "fs:allow-rename",
+      "deny": [
+        {
+          "path": "$HOME/.config/**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:allow-exists",
+      "allow": [
+        {
+          "path": "$APPDATA/*"
+        }
+      ]
+    }
   ]
 }

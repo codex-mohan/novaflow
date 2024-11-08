@@ -34,6 +34,8 @@ pub fn run() {
             backend_task: false,
             cuda_task: false,
         }))
+        // Add the plugins we want to use
+        .plugin(tauri_plugin_fs::init())
         // Add a command we can use to check
         .invoke_handler(tauri::generate_handler![greet, set_complete, open_file,])
         // Use the setup hook to execute setup related tasks
@@ -96,8 +98,9 @@ async fn set_complete(
 async fn setup_backend(app: AppHandle) -> Result<(), ()> {
     // Setup the actual backend and fake loading for  3 seconds
     tauri::async_runtime::spawn(async move {
-        let app =
-            server::routes::all_routes().fallback(server::handlers::not_found::not_found_handler);
+        let app = server::routes::all_routes()
+            .await
+            .fallback(handlers::not_found::not_found_handler);
 
         // Start the Axum server
         let addr = SocketAddr::from(([127, 0, 0, 1], 8920));
