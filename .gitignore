@@ -35,5 +35,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# env and embedded databse folders
 .env
 .env.local
+/$APPDATA
