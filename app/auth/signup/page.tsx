@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { User, Lock, Mail, Github, Chrome } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 import { useRouter } from "next/navigation";
+import { invoke } from "@tauri-apps/api/core";
 
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
@@ -25,7 +26,23 @@ export default function SignUpPage() {
     const fullName = `${firstName} ${lastName}`;
 
     try {
-      router.push("/projects");
+      console.log("submitting...");
+      invoke("signup_user", {
+        first_name: firstName,
+        last_name: lastName,
+        middle_name: "",
+        username: username,
+        email: email,
+        password: password,
+      })
+        .then((message) => {
+          console.log(message);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+
+      router.push("/dashboard");
     } catch (error) {
       console.error("Signup error:", error);
       alert("An error occurred during signup");

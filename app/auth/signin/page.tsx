@@ -1,21 +1,27 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, Chrome, Github } from "lucide-react";
+import { Mail, Lock, Chrome, Github, User2 } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 import { useRouter } from "next/navigation";
+import { invoke } from "@tauri-apps/api/core";
 
 export default function SignInPage() {
-  const [login, setLogin] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     console.log("submitting...");
-    router.push("/nodeeditor");
+    invoke("login_user", {
+      username: username,
+      password: password,
+    });
+    // router.push("/nodeeditor");
   };
 
   const handleGitHubLogin = () => {
@@ -79,14 +85,14 @@ export default function SignInPage() {
               <div className="relative">
                 <input
                   type="text"
-                  id="login"
-                  value={login}
-                  onChange={(e) => setLogin(e.target.value)}
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="w-full pl-10 pr-3 py-2 bg-purple-200 bg-opacity-10 border border-purple-300 border-opacity-30 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent text-white placeholder-purple-200 placeholder-opacity-60 transition-shadow duration-300 ease-in-out hover:shadow-lg hover:shadow-purple-500/30"
                   placeholder="Enter your email or username"
                   required
                 />
-                <Mail
+                <User2
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-300"
                   size={18}
                 />

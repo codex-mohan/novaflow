@@ -4302,14 +4302,17 @@ name = "novaflow-app"
 version = "1.0.1"
 dependencies = [
  "anyhow",
+ "async-trait",
  "axum",
  "candle-core 0.7.2 (git+https://github.com/huggingface/candle.git)",
  "env_logger 0.11.5",
  "image",
+ "lazy_static",
  "log",
  "mistralrs",
  "muddy",
  "obfstr",
+ "once_cell",
  "pretty_env_logger",
  "reqwest",
  "serde",

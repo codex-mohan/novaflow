@@ -1,14 +1,16 @@
 // declare reference to modules
-pub mod cuda_setup;
-pub mod server;
-pub mod utils;
+mod commands;
+mod cuda_setup;
+mod db;
+mod server;
+mod utils;
 
 use axum;
 use server::handlers;
 use std::net::SocketAddr;
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
-use tauri::{AppHandle, Emitter, EventTarget, Manager, State};
+use tauri::{AppHandle, Manager, State};
 use tokio::time::{sleep, Duration};
 
 use cuda_setup::run_cuda_setup;
@@ -37,7 +39,13 @@ pub fn run() {
         // Add the plugins we want to use
         .plugin(tauri_plugin_fs::init())
         // Add a command we can use to check
-        .invoke_handler(tauri::generate_handler![greet, set_complete, open_file,])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            set_complete,
+            commands::open_file,
+            commands::signup_user,
+            commands::login_user
+        ])
         // Use the setup hook to execute setup related tasks
         // Runs before the main loop, so no windows are yet created
         .setup(|app| {
@@ -55,15 +63,6 @@ pub fn run() {
 #[tauri::command]
 fn greet(name: String) -> String {
     format!("Hello {name} from Rust!")
-}
-
-#[tauri::command]
-fn open_file(app: AppHandle, path: std::path::PathBuf) {
-    app.emit_filter("open-file", path, |target| match target {
-        EventTarget::WebviewWindow { label } => label == "main" || label == "file-viewer",
-        _ => false,
-    })
-    .unwrap();
 }
 
 // A custom task for setting the state of a setup task

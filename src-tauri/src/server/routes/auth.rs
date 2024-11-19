@@ -1,4 +1,4 @@
-use crate::server::db::db::{Record, UserDatabase};
+use crate::db::user_db::{UserCredentials, UserDatabase};
 use axum::{extract::State, response::Json, routing::post, Router};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -27,16 +27,4 @@ struct SignupRequest {
 
 async fn login() {}
 
-async fn signup(State(database): State<Arc<UserDatabase>>, Json(request): Json<SignupRequest>) {
-    database
-        .create_user(
-            &request.first_name,
-            &request.middle_name,
-            &request.last_name,
-            &request.username,
-            &request.password,
-            &request.email,
-        )
-        .await
-        .expect("failed adding user");
-}
+async fn signup() {}

@@ -3,9 +3,7 @@
 
 use tracing::info;
 use tracing_subscriber::EnvFilter;
-
-#[tokio::main]
-async fn main() {
+fn main() {
     tracing_subscriber::fmt()
         .pretty() // Enables pretty printing of logs
         .with_env_filter(EnvFilter::from_default_env())

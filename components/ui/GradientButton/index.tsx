@@ -13,7 +13,7 @@ interface GradientButtonProps {
   fromColor: string; // Full Tailwind class for 'from' (e.g., 'from-purple-600')
   viaColor?: string; // Optional Tailwind class for 'via' (e.g., 'via-pink-600')
   toColor: string; // Full Tailwind class for 'to' (e.g., 'to-pink-600')
-  onClick?: () => void;
+  onClick?: () => void | Promise<void>;
 }
 
 const GradientButton: React.FC<GradientButtonProps> = ({
