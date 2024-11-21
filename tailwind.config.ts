@@ -61,6 +61,7 @@ const config: Config = {
       dark: {
         base: "#181826",
         "base-hover": "#2f2f4b",
+        "base-secondary": "#1E1E2E",
         primary: "#9333EA",
         secondary: "#EC4899",
         tertiary: "#EF4444",

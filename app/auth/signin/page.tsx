@@ -20,8 +20,14 @@ export default function SignInPage() {
     invoke("login_user", {
       username: username,
       password: password,
-    });
-    // router.push("/nodeeditor");
+    })
+      .then((message) => {
+        console.log(message);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+    router.push("/dashboard");
   };
 
   const handleGitHubLogin = () => {

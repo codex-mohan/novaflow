@@ -1,4 +1,4 @@
-use crate::db::user_db::{UserCredentials, UserDatabase};
+use crate::db::user_db::{User, UserDatabase};
 use axum::{extract::State, response::Json, routing::post, Router};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;

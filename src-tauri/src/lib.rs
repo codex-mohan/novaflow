@@ -12,6 +12,7 @@ use std::sync::Mutex;
 use tauri::async_runtime::spawn;
 use tauri::{AppHandle, Manager, State};
 use tokio::time::{sleep, Duration};
+use tracing::info;
 
 use cuda_setup::run_cuda_setup;
 
@@ -43,6 +44,7 @@ pub fn run() {
             greet,
             set_complete,
             commands::open_file,
+            commands::get_system_stats,
             commands::signup_user,
             commands::login_user
         ])
@@ -84,7 +86,7 @@ async fn set_complete(
     if state_lock.backend_task && state_lock.cuda_task {
         // Setup is complete, we can close the splashscreen
         // and unhide the main window!
-        println!("All tasks completed!");
+        info!("All tasks completed!");
         let splash_window = app.get_webview_window("splashscreen").unwrap();
         let main_window = app.get_webview_window("main").unwrap();
         splash_window.close().unwrap();
@@ -103,14 +105,14 @@ async fn setup_backend(app: AppHandle) -> Result<(), ()> {
 
         // Start the Axum server
         let addr = SocketAddr::from(([127, 0, 0, 1], 8920));
-        println!("Axum server listening on {}", addr);
+        info!("Axum server listening on {}", addr);
         let listener = tokio::net::TcpListener::bind("0.0.0.0:8920").await.unwrap();
         axum::serve(listener, app).await.unwrap();
-        println!("Axom Server started");
+        info!("Axum Server started");
     });
-    println!("sleeping for 8 seconds");
+    info!("sleeping for 8 seconds");
     sleep(Duration::from_secs(8)).await;
-    println!("Backend setup task completed!");
+    info!("Backend setup task completed!");
     set_complete(
         app.clone(),
         app.state::<Mutex<SetupState>>(),
@@ -122,12 +124,12 @@ async fn setup_backend(app: AppHandle) -> Result<(), ()> {
 
 // Add a new async function for CUDA setup
 async fn cuda_setup(app: AppHandle) -> Result<(), ()> {
-    println!("Starting CUDA setup...");
+    info!("Starting CUDA setup...");
 
     // Run the CUDA setup and await its completion
     run_cuda_setup().await;
 
-    println!("CUDA setup completed!");
+    info!("CUDA setup completed!");
 
     // Set the CUDA task as completed
     set_complete(

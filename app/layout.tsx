@@ -44,9 +44,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <DynamicCustomTitleBar title="NovaFlow" icon="./favicon.ico" />
-          <div className="overflow-auto w-full h-full bg-base text-font">
-            {children}
+          <div className="flex flex-col h-screen">
+            <DynamicCustomTitleBar title="NovaFlow" icon="./favicon.ico" />
+            <div className="flex-1 h-[calc(100vh-4rem)] bg-base text-font">
+              {children}
+            </div>
           </div>
         </ThemeProvider>
       </body>
