@@ -22,18 +22,25 @@ pub struct Message {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct MessageContent {
-    pub type_: String, // "text" | "code" | "image" | "latex"
-    pub content: String,
-    pub metadata: Option<MessageMetadata>,
+#[serde(rename_all = "lowercase")]
+pub enum MessageContent {
+    Text {
+        text: String,
+    },
+    Image {
+        base64_image: String,
+        caption: Option<String>,
+    },
+    MultiModal {
+        text: String,
+        images: Vec<Image>, // base64 encoded images
+    },
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct MessageMetadata {
-    pub language: Option<String>,  // For code snippets
-    pub alt: Option<String>,       // For images
-    pub mime_type: Option<String>, // For attachments
-    pub file_name: Option<String>, // For attachments
+pub struct Image {
+    pub base64_image: String,
+    pub caption: Option<String>,
 }
 
 pub struct ConversationDatabase;

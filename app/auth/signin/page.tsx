@@ -7,27 +7,53 @@ import { Mail, Lock, Chrome, Github, User2 } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 import { useRouter } from "next/navigation";
 import { invoke } from "@tauri-apps/api/core";
+import { User } from "@/types/auth";
+import { useAuthStore } from "@/store/auth-store";
+import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function SignInPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("submitting...");
-    invoke("login_user", {
-      username: username,
-      password: password,
-    })
-      .then((message) => {
-        console.log(message);
-      })
-      .catch((error) => {
-        console.error(error);
+    
+    try {
+      const response = await invoke("login_user", {
+        username: username,
+        password: password,
       });
-    router.push("/dashboard");
+
+      if (response && typeof response === "object" && "username" in response) {
+        const userData: User = response as User;
+        
+        if (rememberMe) {
+          useAuthStore.getState().login(userData);
+        } else {
+          // For session-only storage
+          useAuthStore.getState().setUser(userData);
+        }
+        
+        toast({
+          title: "Success",
+          description: "Successfully logged in!",
+        });
+        
+        router.push("/dashboard");
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "Failed to login. Please check your credentials.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleGitHubLogin = () => {
@@ -36,6 +62,15 @@ export default function SignInPage() {
 
   const handleGoogleLogin = () => {
     console.log("google login");
+  };
+
+  const handleLogout = () => {
+    useAuthStore.getState().logout();
+    router.push('/auth/signin');
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
   };
 
   return (
@@ -184,6 +219,7 @@ export default function SignInPage() {
           </GradientButton>
         </div>
       </motion.div>
+      <Toaster />
     </div>
   );
 }

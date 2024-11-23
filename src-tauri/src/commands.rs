@@ -19,52 +19,6 @@ pub fn open_file(app: AppHandle, path: std::path::PathBuf) {
     .unwrap();
 }
 
-// #[tauri::command(rename_all = "snake_case")]
-// pub async fn signup_user(
-//     first_name: String,
-//     last_name: String,
-//     username: String,
-//     password: String,
-//     email: String,
-// ) -> Result<(), String> {
-//     info!("Signing up user...");
-
-//     let database_path = get_database_path("db").display().to_string();
-
-//     let joint_result: JoinHandle<Result<(), surrealdb::Error>> =
-//         tauri::async_runtime::spawn(async move {
-//             // Initialize the UserDatabase
-//             // let user_db = UserDatabase::new(&database_path).await?;
-//             let user_db = UserDatabase::initialize(&database_path).await?;
-
-//             info!("Database initialized successfully");
-//             // Call `create_user` method
-//             user_db
-//                 .create_user(first_name, last_name, username, password, email)
-//                 .await
-//         });
-
-//     info!("User creation started");
-
-//     // Await the result
-//     match joint_result.await {
-//         Ok(result) => match result {
-//             Ok(_) => {
-//                 info!("User created successfully");
-//                 Ok(())
-//             }
-//             Err(e) => {
-//                 error!("Failed creating user: {:?}", e);
-//                 Err(format!("Failed creating user: {:?}", e))
-//             }
-//         },
-//         Err(e) => {
-//             error!("Error creating user: {:?}", e);
-//             Err(format!("Error creating user: {:?}", e))
-//         }
-//     }
-// }
-
 #[tauri::command(rename_all = "snake_case")]
 pub async fn signup_user(
     first_name: String,
