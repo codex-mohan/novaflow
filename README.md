@@ -2,8 +2,7 @@
 ### This repo will be dedicated for keeping tract of documemntation. 
 - Use Images, Emojis for better Aesthetics and readability
 - Structure the files in proper directories for ex,
-``` Introduction
-```
+
 # 📝 NovaFlow: Intelligent Voice Assistant
 
 NovaFlow is a cutting-edge voice assistant that harnesses the power of advanced AI to provide a seamless, intuitive experience for users. Inspired by the iconic JARVIS from Iron Man, NovaFlow combines multiple models to enable automation, personalized assistance, and efficient task execution.
