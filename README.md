@@ -70,7 +70,7 @@ Refer to the [Tauri setup guide](https://tauri.app/) for platform-specific instr
 ### Step 7: Start the application
 
 ```bash
-bun --bun tauri  
+bun --bun tauri dev
 ```
 
 ---
