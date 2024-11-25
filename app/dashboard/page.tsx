@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Share2, Settings, HelpCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Conversation from "@/components/views/Conversation"; // Import the Conversation component
@@ -28,7 +27,7 @@ export default function Dashboard() {
       }}
     >
       {/* Side Menu */}
-      <div className="w-14 h-full bg-[#181825] flex flex-col items-center py-2 space-y-4 border-r border-[#313244]">
+      <div className="w-14 h-full bg-[#181825] flex flex-col items-center py-2 space-y-4">
         {[
           { name: "conversation", icon: MessageSquare },
           { name: "node-editor", icon: Share2 },

@@ -1,19 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from "react";
+import remarkRehype from "remark-rehype";
+import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import remarkParse from "remark-parse";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { InlineMath, BlockMath } from "react-katex";
-import Image from 'next/image';
-import { Copy, Check, Download } from 'lucide-react';
+import Image from "next/image";
+import { Copy, Check, Download, RefreshCcw, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState } from 'react';
 
 interface MessageContent {
-  type: "text" | "code" | "image" | "latex";
+  type: "text" | "image";
   content: string;
   metadata?: {
-    language?: string;
     alt?: string;
     mime_type?: string;
     file_name?: string;
@@ -26,7 +29,13 @@ interface ChatMessageProps {
   timestamp: Date;
 }
 
-const CodeBlock = ({ content, language }: { content: string; language?: string }) => {
+const CodeBlock = ({
+  content,
+  language,
+}: {
+  content: string;
+  language?: string;
+}) => {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -37,12 +46,18 @@ const CodeBlock = ({ content, language }: { content: string; language?: string }
 
   return (
     <div className="relative group my-2">
+      <div>
+        <span>
+          <b>{language}</b>
+        </span>
+      </div>
       <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <Button
           variant="ghost"
           size="icon"
           className="h-8 w-8 bg-[#232334] hover:bg-[#313244]"
           onClick={handleCopy}
+          title="Copy to Clipboard"
         >
           {copied ? (
             <Check className="h-4 w-4 text-green-500" />
@@ -56,11 +71,11 @@ const CodeBlock = ({ content, language }: { content: string; language?: string }
         style={vscDarkPlus}
         customStyle={{
           margin: 0,
-          borderRadius: '0.5rem',
-          padding: '1rem',
-          backgroundColor: '#1e1e2e',
+          borderRadius: "0.5rem",
+          padding: "1rem",
+          backgroundColor: "#1e1e2e",
         }}
-        wrapLongLines={true}
+        wrapLongLines
       >
         {content}
       </SyntaxHighlighter>
@@ -68,14 +83,20 @@ const CodeBlock = ({ content, language }: { content: string; language?: string }
   );
 };
 
-const ImageBlock = ({ content, metadata }: { content: string; metadata?: MessageContent['metadata'] }) => {
+const ImageBlock = ({
+  content,
+  metadata,
+}: {
+  content: string;
+  metadata?: MessageContent["metadata"];
+}) => {
   const handleDownload = async () => {
     const response = await fetch(content);
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = metadata?.file_name || 'image';
+    a.download = metadata?.file_name || "image";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -90,6 +111,7 @@ const ImageBlock = ({ content, metadata }: { content: string; metadata?: Message
           size="icon"
           className="h-8 w-8 bg-[#232334] hover:bg-[#313244]"
           onClick={handleDownload}
+          title="Download Image"
         >
           <Download className="h-4 w-4" />
         </Button>
@@ -105,41 +127,69 @@ const ImageBlock = ({ content, metadata }: { content: string; metadata?: Message
   );
 };
 
-const ContentRenderer = ({ content }: { content: MessageContent }) => {
-  switch (content.type) {
-    case "code":
-      return (
-        <CodeBlock 
-          content={content.content} 
-          language={content.metadata?.language} 
-        />
-      );
-    
-    case "image":
-      return (
-        <ImageBlock 
-          content={content.content} 
-          metadata={content.metadata} 
-        />
-      );
-    
-    case "latex":
-      return (
-        <div className="my-2">
-          {content.content.includes("\n") ? (
-            <BlockMath>{content.content}</BlockMath>
-          ) : (
-            <InlineMath>{content.content}</InlineMath>
-          )}
+const ContentRenderer = ({ content }: { content: string }) => (
+  <ReactMarkdown
+    children={content}
+    rehypePlugins={[rehypeKatex]}
+    remarkPlugins={[remarkMath, remarkRehype, remarkGfm, remarkParse]}
+    components={{
+      code({ children, className }) {
+        const match = /language-(\w+)/.exec(className || "");
+        return match ? (
+          <CodeBlock
+            content={String(children).replace(/\n$/, "")}
+            language={match[1]}
+          />
+        ) : (
+          <code className={className}>{children}</code>
+        );
+      },
+    }}
+  />
+);
+
+const ChatControls = ({
+  role,
+  timestamp,
+}: {
+  role: "user" | "assistant";
+  timestamp: Date;
+}) => {
+  if (role === "assistant") {
+    return (
+      <div className="mt-2 flex space-x-2 justify-end align-baseline">
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Copy Generation"
+          className="h-4 w-4 bg-transparent hover:bg-[#313244] self-end"
+        >
+          <Copy className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Regenerate Response"
+          className="h-4 w-4 bg-transparent hover:bg-[#313244] self-end"
+        >
+          <RefreshCcw className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Switch Model"
+          className="h-4 w-4 bg-transparent hover:bg-[#313244] self-end"
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
+        <div className="text-xs text-[#a1a1aa] mt-1 self-end">
+          {new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </div>
-      );
-    
-    default:
-      return (
-        <p className="whitespace-pre-wrap text-[#e4e4e7] leading-relaxed">
-          {content.content}
-        </p>
-      );
+      </div>
+    );
   }
 };
 
@@ -175,21 +225,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         <div
           className={cn(
             "flex flex-col space-y-2 rounded-lg p-4",
-            role === "user" 
-              ? "bg-[#313244] text-[#e4e4e7]" 
+            role === "user"
+              ? "bg-[#313244] text-[#e4e4e7]"
               : "bg-[#232334] text-[#e4e4e7]"
           )}
         >
           {contents.map((content, index) => (
-            <ContentRenderer key={index} content={content} />
+            <ContentRenderer key={index} content={content.content} />
           ))}
-          
-          <div className="text-xs text-[#a1a1aa] mt-1 self-end">
-            {new Date(timestamp).toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </div>
+
+          <ChatControls role={role} timestamp={timestamp} />
         </div>
       </div>
     </div>

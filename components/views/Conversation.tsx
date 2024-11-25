@@ -4,14 +4,15 @@ import { useState, useRef, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import ScrollArea from "@/components/ui/scroll-area";
 import { Send, StopCircle } from "lucide-react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { AttachmentMenu } from "@/components/chat/AttachmentMenu";
 import { useToast } from "@/hooks/use-toast";
+import { Provider, Ollama } from "@/lib/provider";
 
 type MessageContent = {
-  type: "text" | "code" | "image" | "latex";
+  type: "text" | "image";
   content: string;
   metadata?: {
     language?: string;
@@ -34,13 +35,14 @@ export default function Conversation() {
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const provider = new Ollama();
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
-        behavior: "smooth",
-      });
+    const scrollViewport = scrollAreaRef.current?.querySelector(
+      "[data-radix-scroll-area-viewport]"
+    );
+    if (scrollViewport) {
+      scrollViewport.scrollTop = scrollViewport.scrollHeight;
     }
   }, [messages]);
 
@@ -58,51 +60,97 @@ export default function Conversation() {
     setInput("");
     setIsStreaming(true);
 
+    let assistantContent = "";
+
+    const assistantMessage: Message = {
+      id: nanoid(),
+      role: "assistant",
+      contents: [{ type: "text", content: assistantContent }],
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("http://localhost:11434/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "phi3",
+          messages: [
+            {
+              role: "user",
+              content: input,
+            },
+          ],
+        }),
       });
 
-      if (!response.ok) throw new Error("Failed to get response");
+      if (!response.body) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-      const reader = response.body?.getReader();
-      if (!reader) throw new Error("No reader available");
+      const reader = response.body.getReader();
+      let done = false;
+      let buffer = ""; // Buffer to handle concatenated JSON
 
-      let assistantMessage: Message = {
-        id: nanoid(),
-        role: "assistant",
-        contents: [{ type: "text", content: "" }],
-        timestamp: new Date(),
-      };
+      while (!done) {
+        const { value, done: streamDone } = await reader.read();
+        done = streamDone;
+        const chunk = new TextDecoder("utf-8").decode(value);
+        buffer += chunk; // Append the chunk to the buffer
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        // Process multiple JSON objects in the buffer
+        let boundary = buffer.indexOf("}\n{"); // Find the boundary between JSON objects
+        while (boundary !== -1) {
+          const jsonString = buffer.slice(0, boundary + 1); // Extract one JSON object
+          buffer = buffer.slice(boundary + 1); // Update the buffer with the remaining data
+          boundary = buffer.indexOf("}\n{");
 
-        const chunk = new TextDecoder().decode(value);
-        assistantMessage.contents[0].content += chunk;
+          try {
+            const json = JSON.parse(jsonString);
+            if (json && json.message && json.message.content) {
+              assistantContent += json.message.content;
+              assistantMessage.contents = [
+                { type: "text", content: assistantContent },
+              ];
 
-        setMessages((prev) => {
-          const newMessages = [...prev];
-          const index = newMessages.findIndex(
-            (m) => m.id === assistantMessage.id
-          );
-          if (index === -1) {
-            newMessages.push(assistantMessage);
-          } else {
-            newMessages[index] = assistantMessage;
+              setMessages((prev) =>
+                prev.map((m) =>
+                  m.id === assistantMessage.id ? assistantMessage : m
+                )
+              );
+            }
+          } catch (error) {
+            console.error("Failed to parse JSON:", jsonString, error);
           }
-          return newMessages;
-        });
+        }
+      }
+
+      // Process any remaining JSON in the buffer
+      try {
+        if (buffer.trim()) {
+          const json = JSON.parse(buffer);
+          if (json && json.message && json.message.content) {
+            assistantContent += json.message.content;
+            assistantMessage.contents = [
+              { type: "text", content: assistantContent },
+            ];
+
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === assistantMessage.id ? assistantMessage : m
+              )
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Failed to parse final JSON:", buffer, error);
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to get response from assistant",
-        variant: "destructive",
-      });
+      console.error(error);
     } finally {
       setIsStreaming(false);
     }
@@ -153,8 +201,8 @@ export default function Conversation() {
   return (
     <div className="flex flex-col h-full">
       {/* Scrollable chat area */}
-      <ScrollArea className="flex-1 px-4 py-2" ref={scrollAreaRef}>
-        <div className="space-y-4 max-w-max mx-auto">
+      <ScrollArea className="flex-1 px-4 py-2 overflow-y-scroll">
+        <div className="space-y-4 w-full mx-auto overflow-y-scroll">
           {messages.map((message) => (
             <ChatMessage
               key={message.id}

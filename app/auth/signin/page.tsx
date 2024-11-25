@@ -9,8 +9,8 @@ import { useRouter } from "next/navigation";
 import { invoke } from "@tauri-apps/api/core";
 import { User } from "@/types/auth";
 import { useAuthStore } from "@/store/auth-store";
-import { useToast } from "@/hooks/use-toast"
-import { Toaster } from "@/components/ui/toaster"
+import { useToast } from "@/hooks/use-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function SignInPage() {
   const [username, setUsername] = useState("");
@@ -22,7 +22,7 @@ export default function SignInPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log("submitting...");
-    
+
     try {
       const response = await invoke("login_user", {
         username: username,
@@ -31,19 +31,19 @@ export default function SignInPage() {
 
       if (response && typeof response === "object" && "username" in response) {
         const userData: User = response as User;
-        
+
         if (rememberMe) {
           useAuthStore.getState().login(userData);
         } else {
           // For session-only storage
           useAuthStore.getState().setUser(userData);
         }
-        
+
         toast({
           title: "Success",
           description: "Successfully logged in!",
         });
-        
+
         router.push("/dashboard");
       }
     } catch (error) {
@@ -66,7 +66,7 @@ export default function SignInPage() {
 
   const handleLogout = () => {
     useAuthStore.getState().logout();
-    router.push('/auth/signin');
+    router.push("/auth/signin");
     toast({
       title: "Logged out",
       description: "You have been successfully logged out.",
@@ -74,7 +74,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-gray-900 to-pink-900 flex items-center justify-center p-4">
+    <div className="min-h-screen w-full  bg-gradient-to-br from-purple-900 via-gray-900 to-pink-900 flex items-center justify-center p-4">
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
