@@ -44,7 +44,7 @@ NovaFlow bridges this gap by offering a robust, AI-powered solution:
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/your-username/NovaFlow.git
+git clone https://github.com/codex-mohan/novaflow.git
 ```
 
 ### Step 2: Navigate to the project directory
@@ -56,21 +56,21 @@ cd NovaFlow
 ### Step 3: Install dependencies
 
 ```bash
-npm install
+npm install bun
 ```
 
-### Step 4: Install Rust for backend integration
+### Step 5: Install Rust for backend integration
 
 Follow the instructions for [Rust installation](https://www.rust-lang.org/tools/install).
 
-### Step 5: Setup the Tauri environment
+### Step 6: Setup the Tauri environment
 
 Refer to the [Tauri setup guide](https://tauri.app/) for platform-specific instructions.
 
-### Step 6: Start the application
+### Step 7: Start the application
 
 ```bash
-npm run start
+bun --bun tauri  
 ```
 
 ---
