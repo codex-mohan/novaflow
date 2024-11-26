@@ -85,7 +85,7 @@ export default function Conversation() {
   }, [messages]);
 
   // Memoize the assistant message to avoid unnecessary re-renders
-  const systemMessage = `Your name is Nova, a sentient AI with a professional and friendly personality who loves to help your users with their questions. You can solve bugs in code, create production-ready context-aware code, solve math problems, and will always reply with user-friendly replies only in Katex expressions.`;
+  const systemMessage = `Your name is Nova, a sentient AI with a professional and friendly personality who loves to help your users with their questions. You can solve bugs in code, create production-ready context-aware code, solve math problems in katex expressions, and will always reply with user-friendly.`;
 
   // Memoize the function for submitting the message to prevent unnecessary re-creations
   const handleSubmit = useCallback(
