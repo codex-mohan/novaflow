@@ -1,11 +1,8 @@
-use crate::{db::user_db, utils::get_database_path};
-use candle_core::cpu;
-use serde_json::{json, Value};
+use crate::utils::get_database_path;
+use serde_json::json;
 use std::result::Result::Ok;
-use std::thread;
-use std::time::Duration;
-use sysinfo::{Cpu, System};
-use tauri::{async_runtime::JoinHandle, AppHandle, Emitter, EventTarget};
+use sysinfo::{CpuRefreshKind, RefreshKind, System};
+use tauri::{AppHandle, Emitter, EventTarget};
 use tracing::{error, info};
 
 use crate::db::user_db::{User, UserDatabase};
@@ -102,29 +99,4 @@ pub async fn login_user(username: String, password: String) -> Result<serde_json
             Err(format!("Error logging in: {:?}", e))
         }
     }
-}
-
-#[tauri::command]
-pub fn get_system_stats() -> (f32, f32, f32, f32) {
-    let mut sys = System::new_all();
-    sys.refresh_all();
-
-    sys.refresh_cpu_usage();
-    // CPU Usage (average across all cores)
-    let cpu_usage =
-        sys.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / sys.cpus().len() as f32;
-
-    // println!("CPU Usage: {}", cpu_usage);
-
-    // Memory Usage
-    let total_memory = sys.total_memory() as f32;
-    let used_memory = (sys.total_memory() - sys.available_memory()) as f32;
-    let memory_usage = (used_memory / total_memory) * 100.0;
-
-    // GPU Info (example using nvidia-smi, you'll need to add nvidia-smi crate)
-    // For this example, returning placeholder values
-    let gpu_usage = 0.0;
-    let vram_usage = 0.0;
-
-    (cpu_usage, memory_usage, gpu_usage, vram_usage)
 }

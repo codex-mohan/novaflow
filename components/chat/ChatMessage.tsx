@@ -9,9 +9,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Image from "next/image";
-import { Copy, Check, Download, RefreshCcw, Settings } from "lucide-react";
+import {
+  Copy,
+  Check,
+  Download,
+  RefreshCcw,
+  Settings,
+  Edit,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+// Don't forget to import styles for KaTeX
+import "katex/dist/katex.min.css";
 
 interface MessageContent {
   type: "text" | "image";
@@ -24,7 +34,7 @@ interface MessageContent {
 }
 
 interface ChatMessageProps {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   contents: MessageContent[];
   timestamp: Date;
 }
@@ -127,32 +137,46 @@ const ImageBlock = ({
   );
 };
 
-const ContentRenderer = ({ content }: { content: string }) => (
-  <ReactMarkdown
-    children={content}
-    rehypePlugins={[rehypeKatex]}
-    remarkPlugins={[remarkMath, remarkRehype, remarkGfm, remarkParse]}
-    components={{
-      code({ children, className }) {
-        const match = /language-(\w+)/.exec(className || "");
-        return match ? (
-          <CodeBlock
-            content={String(children).replace(/\n$/, "")}
-            language={match[1]}
-          />
-        ) : (
-          <code className={className}>{children}</code>
-        );
-      },
-    }}
-  />
-);
+const ContentRenderer = ({
+  content,
+  role,
+}: {
+  content: string;
+  role: "user" | "assistant" | "system";
+}) => {
+  if (role === "user") {
+    return <div className="text-wrap break-words">{content}</div>;
+  }
+  if (role === "assistant") {
+    return (
+      <ReactMarkdown
+        className={""}
+        children={content}
+        rehypePlugins={[rehypeKatex]}
+        remarkPlugins={[remarkMath, remarkGfm, remarkParse, remarkRehype]}
+        components={{
+          code({ children, className }) {
+            const match = /language-(\w+)/.exec(className || "");
+            return match ? (
+              <CodeBlock
+                content={String(children).replace(/\n$/, "")}
+                language={match[1]}
+              />
+            ) : (
+              <code className={className}>{children}</code>
+            );
+          },
+        }}
+      />
+    );
+  }
+};
 
 const ChatControls = ({
   role,
   timestamp,
 }: {
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "system";
   timestamp: Date;
 }) => {
   if (role === "assistant") {
@@ -190,6 +214,33 @@ const ChatControls = ({
         </div>
       </div>
     );
+  } else {
+    return (
+      <div className="mt-2 flex space-x-2 justify-start align-baseline">
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Edit Message"
+          className="h-4 w-4 bg-transparent hover:bg-[#313244] self-end"
+        >
+          <Edit className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Regenerate Request"
+          className="h-4 w-4 bg-transparent hover:bg-[#313244] self-end"
+        >
+          <RefreshCcw className="h-4 w-4" />
+        </Button>
+        <div className="text-xs text-[#a1a1aa] mt-1 self-end">
+          {new Date(timestamp).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </div>
+      </div>
+    );
   }
 };
 
@@ -207,7 +258,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     >
       <div
         className={cn(
-          "flex items-start space-x-2 max-w-3xl",
+          "flex items-start space-x-2 max-w-3xl w-fit",
           role === "user" ? "flex-row-reverse space-x-reverse" : ""
         )}
       >
@@ -224,14 +275,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
         <div
           className={cn(
-            "flex flex-col space-y-2 rounded-lg p-4",
+            "flex flex-col space-y-2 rounded-lg p-4 flex-nowrap w-fit text-justify",
             role === "user"
-              ? "bg-[#313244] text-[#e4e4e7]"
-              : "bg-[#232334] text-[#e4e4e7]"
+              ? "bg-[#313244] text-[#e4e4e7] w-full"
+              : "bg-[#232334] text-[#e4e4e7] flex-nowrap justify-center"
           )}
         >
           {contents.map((content, index) => (
-            <ContentRenderer key={index} content={content.content} />
+            <ContentRenderer
+              key={index}
+              content={content.content}
+              role={role}
+            />
           ))}
 
           <ChatControls role={role} timestamp={timestamp} />

@@ -2,14 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+@font-face {
+  font-family: "Segoe UI Emoji";
+  src: url("/fonts/SegoeUIEmoji.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 
 @layer base {
@@ -39,9 +42,9 @@ body {
 html,
 body {
   margin: 0;
-  font-family: sans-serif;
   box-sizing: border-box;
   --xy-minimap-background-color-default: @apply bg-base;
+  font-family: "FiraCode Nerd Font";
 }
 
 #app {
@@ -119,4 +122,17 @@ body {
 
 .dark .react-flow__panel {
   @apply text-font;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 90, 213, 0.5); /* Purple-like glow */
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 90, 213, 0.7);
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background-color: #232334;
 }

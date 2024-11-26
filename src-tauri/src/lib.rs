@@ -15,6 +15,7 @@ use tokio::time::{sleep, Duration};
 use tracing::info;
 
 use cuda_setup::run_cuda_setup;
+use utils::start_resource_monitor;
 
 // Create a struct we'll use to track the completion of
 // setup related tasks
@@ -44,9 +45,8 @@ pub fn run() {
             greet,
             set_complete,
             commands::open_file,
-            commands::get_system_stats,
             commands::signup_user,
-            commands::login_user
+            commands::login_user,
         ])
         // Use the setup hook to execute setup related tasks
         // Runs before the main loop, so no windows are yet created
@@ -54,6 +54,7 @@ pub fn run() {
             // Spawn both setup tasks
             spawn(setup_backend(app.handle().clone()));
             spawn(cuda_setup(app.handle().clone()));
+            spawn(start_resource_monitor(app.handle().clone()));
             // The hook expects an Ok result
             Ok(())
         })

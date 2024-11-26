@@ -3,6 +3,7 @@ import QueueBar from "@/components/ui/queuebar";
 
 const NodeLayout = dynamic(() => import("@/components/NodeLayout"), {
   ssr: false,
+  loading: () => <p>Loading...</p>,
 });
 
 export default function NodeEditor() {
