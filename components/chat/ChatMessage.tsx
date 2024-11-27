@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import "katex/dist/katex.min.css";
 
 interface MessageContent {
-  type: "text" | "image";
+  type: "text" | "image" | "file";
   content: string;
   metadata?: {
     alt?: string;
@@ -165,6 +165,9 @@ const ContentRenderer = ({
             ) : (
               <code className={className}>{children}</code>
             );
+          },
+          img({ alt, src }) {
+            return <ImageBlock content={src as string} metadata={{ alt }} />;
           },
         }}
       />

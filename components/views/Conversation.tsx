@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  useMemo,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import ScrollArea from "@/components/ui/scroll-area";
@@ -15,19 +9,23 @@ import { ChatMessage } from "@/components/chat/ChatMessage";
 import { AttachmentMenu } from "@/components/menus/AttachmentMenu";
 import { useToast } from "@/hooks/use-toast";
 import { Provider, Ollama } from "@/lib/provider";
-import DynamicTextarea from "../ui/DynamicTextArea";
 
 // Don't forget to import styles for KaTeX
 import "katex/dist/katex.min.css";
+import GradientButton from "../ui/GradientButton";
 
 type MessageContent = {
-  type: "text" | "image";
+  type: "text";
   content: string;
-  metadata?: {
-    language?: string;
+};
+
+type AttachmentType = {
+  type: "image";
+  content: string;
+  metadata: {
     alt?: string;
-    mime_type?: string;
-    file_name?: string;
+    mime_type: string;
+    file_name: string;
   };
 };
 
@@ -35,36 +33,32 @@ type Message = {
   id: string;
   role: "user" | "assistant" | "system";
   contents: MessageContent[];
+  images?: AttachmentType[];
   timestamp: Date;
 };
 
 export default function Conversation() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [attachments, setAttachments] = useState<AttachmentType[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { toast } = useToast();
   const provider = new Ollama();
 
-  const inputTimeout = useRef<NodeJS.Timeout | null>(null); // Ref for debounce
-  const [inputHeight, setInputHeight] = useState("auto"); // Manage text area height
-
   const resizeTextarea = useCallback(() => {
     if (textareaRef.current) {
       const maxHeight = window.innerHeight * 0.3; // Max height is 30% of the viewport height
-      textareaRef.current.style.height = "auto"; // Reset height to calculate correctly
+      textareaRef.current.style.height = "auto";
       const newHeight = Math.min(textareaRef.current.scrollHeight, maxHeight);
-      textareaRef.current.style.height = `${newHeight}px`; // Set to calculated height
+      textareaRef.current.style.height = `${newHeight}px`;
     }
   }, []);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const value = e.target.value;
-      setInput(value);
-
-      // Resize textarea
+      setInput(e.target.value);
       requestAnimationFrame(() => resizeTextarea());
     },
     [resizeTextarea]
@@ -74,7 +68,6 @@ export default function Conversation() {
     resizeTextarea();
   }, [resizeTextarea]);
 
-  // Scroll the chat view to the bottom when new messages are added
   useEffect(() => {
     const scrollViewport = scrollAreaRef.current?.querySelector(
       "[data-radix-scroll-area-viewport]"
@@ -84,41 +77,37 @@ export default function Conversation() {
     }
   }, [messages]);
 
-  // Memoize the assistant message to avoid unnecessary re-renders
-  const systemMessage = `Your name is Nova, a sentient AI with a professional and friendly personality who loves to help your users with their questions. You can solve bugs in code, create production-ready context-aware code, solve math problems in katex expressions, and will always reply with user-friendly.`;
+  const systemMessage = `Your name is Nova, a sentient AI with a professional and friendly personality who loves to help your users with their questions.`;
 
-  // Memoize the function for submitting the message to prevent unnecessary re-creations
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!input.trim()) return;
-
-      console.log("Sending message:", input);
+      if (!input.trim() && attachments.length === 0) return;
 
       const userMessage: Message = {
         id: nanoid(),
         role: "user",
-        contents: [{ type: "text", content: input }],
+        contents: input.trim()
+          ? [{ type: "text", content: input } as MessageContent]
+          : [],
+        images: attachments,
         timestamp: new Date(),
       };
 
-      if (
-        !messages.some(
-          (msg) => msg.contents[0].content === userMessage.contents[0].content
-        )
-      ) {
-        setMessages((prev) => [...prev, userMessage]);
-      }
-
+      setMessages((prev) => [...prev, userMessage]);
       setInput("");
+      setAttachments([]);
       setIsStreaming(true);
-
-      let assistantContent = "";
 
       const assistantMessage: Message = {
         id: nanoid(),
         role: "assistant",
-        contents: [{ type: "text", content: assistantContent }],
+        contents: [
+          {
+            type: "text",
+            content: "",
+          } as MessageContent,
+        ],
         timestamp: new Date(),
       };
 
@@ -128,19 +117,35 @@ export default function Conversation() {
         const history = messages.map((msg) => ({
           role: msg.role,
           content: msg.contents.map((c) => c.content).join("\n"),
+          images: msg.images?.map((img) => img.content) || [],
         }));
 
-        history.push({ role: "user", content: input });
+        history.push({
+          role: "user",
+          content: userMessage.contents.map((c) => c.content).join("\n"),
+          images: userMessage.images?.map((img) => img.content) || [],
+        });
+
+        const payload = {
+          model: "llama3.2-vision",
+          messages: [
+            { role: "user", content: systemMessage },
+            ...history.map((msg) => ({
+              role: msg.role,
+              content: msg.content,
+              images: msg.images,
+            })),
+          ],
+        };
+
+        console.log("Constructed Payload:", JSON.stringify(payload, null, 2));
 
         const response = await fetch("http://localhost:11434/api/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            model: "phi3",
-            messages: [{ role: "user", content: systemMessage }, ...history],
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!response.body) {
@@ -166,14 +171,20 @@ export default function Conversation() {
             try {
               const json = JSON.parse(jsonString);
               if (json?.message?.content) {
-                assistantContent += json.message.content;
-                assistantMessage.contents = [
-                  { type: "text", content: assistantContent },
-                ];
-
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === assistantMessage.id ? assistantMessage : m
+                    m.id === assistantMessage.id
+                      ? {
+                          ...m,
+                          contents: [
+                            {
+                              type: "text",
+                              content:
+                                m.contents[0].content + json.message.content,
+                            },
+                          ],
+                        }
+                      : m
                   )
                 );
               }
@@ -182,80 +193,91 @@ export default function Conversation() {
             }
           }
         }
-
-        if (buffer.trim()) {
-          try {
-            const json = JSON.parse(buffer);
-            if (json?.message?.content) {
-              assistantContent += json.message.content;
-              assistantMessage.contents = [
-                { type: "text", content: assistantContent },
-              ];
-
-              setMessages((prev) =>
-                prev.map((m) =>
-                  m.id === assistantMessage.id ? assistantMessage : m
-                )
-              );
-            }
-          } catch (error) {
-            console.error("Failed to parse final JSON:", buffer, error);
-          }
-        }
       } catch (error) {
         console.error(error);
+        toast({
+          title: "Error",
+          description: "An error occurred while fetching assistant response.",
+        });
       } finally {
         setIsStreaming(false);
       }
     },
-    [input, messages, systemMessage]
+    [input, messages, systemMessage, attachments, toast]
   );
 
   const handleAttachment = async (type: string) => {
-    switch (type) {
-      case "image":
-        const input = document.createElement("input");
-        input.type = "file";
-        input.accept = "image/*";
-        input.onchange = async (e) => {
-          const file = (e.target as HTMLInputElement).files?.[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-              const imageMessage: Message = {
-                id: nanoid(),
-                role: "user",
-                contents: [
-                  {
-                    type: "image",
-                    content: e.target?.result as string,
-                    metadata: {
-                      alt: file.name,
-                      mime_type: file.type,
-                    },
-                  },
-                ],
-                timestamp: new Date(),
+    console.log("handleAttachment called");
+
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = type === "image" ? "image/*" : "";
+    input.multiple = true;
+
+    console.log("input:", input);
+
+    input.onchange = async (e) => {
+      const files = (e.target as HTMLInputElement).files;
+      if (!files) return;
+
+      const newAttachments: AttachmentType[] = [];
+
+      // Track completion of file reading using Promise.all
+      const fileReadPromises = Array.from(files).map((file) => {
+        return new Promise<void>((resolve, reject) => {
+          const reader = new FileReader();
+
+          reader.onload = (event) => {
+            if (event.target?.result) {
+              // Remove the "data:image/png;base64," prefix
+              const base64Data = (event.target.result as string).replace(
+                /^data:image\/\w+;base64,/,
+                ""
+              );
+
+              const attachment: AttachmentType = {
+                type: "image",
+                content: base64Data, // Now sending only the raw base64 string
+                metadata: {
+                  mime_type: file.type,
+                  file_name: file.name,
+                  alt: file.name,
+                },
               };
-              setMessages((prev) => [...prev, imageMessage]);
-            };
-            reader.readAsDataURL(file);
-          }
-        };
-        input.click();
-        break;
-      // Add other attachment type handlers here
-    }
+              newAttachments.push(attachment);
+              console.log("Encoded Attachment:", attachment.content);
+              resolve(); // Resolve after successfully reading the file
+            }
+          };
+
+          reader.onerror = reject; // Reject if error occurs during reading
+
+          reader.readAsDataURL(file); // Start reading the file
+        });
+      });
+
+      // Wait for all files to be processed before updating state
+      try {
+        await Promise.all(fileReadPromises);
+
+        // After all files are processed, update the state
+        setAttachments((prev) => [...prev, ...newAttachments]);
+        console.log("New Attachments after set:", newAttachments);
+      } catch (error) {
+        console.error("Error reading files:", error);
+      }
+    };
+
+    input.click();
   };
 
-  const stopGeneration = () => {
-    setIsStreaming(false);
-    // Add actual abort controller logic here
-  };
+  // useEffect to log when attachments state changes
+  useEffect(() => {
+    console.log("Attachments updated:", attachments);
+  }, [attachments]);
 
   return (
     <div className="flex flex-col" style={{ height: "calc(100vh - 2.5rem)" }}>
-      {/* Scrollable chat area */}
       <ScrollArea className="flex-1 px-4 py-2 overflow-y-scroll">
         <div className="space-y-4 w-full mx-auto overflow-y-scroll">
           {messages.map((message) => (
@@ -269,43 +291,44 @@ export default function Conversation() {
         </div>
       </ScrollArea>
 
-      {/* Input box */}
       <div className="self-end align-middle bottom-0 mb-4 left-[3.5em] w-full bg-[#232334] p-4 rounded-md">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="flex items-center space-x-2">
-            <AttachmentMenu onSelect={() => {}} />
+            <AttachmentMenu onSelect={handleAttachment} />
             <textarea
               ref={textareaRef}
               value={input}
               onChange={handleInputChange}
               placeholder="Type your message here..."
               spellCheck="true"
-              className={`block w-full resize-none bg-inherit text-font border border-purple-300 border-opacity-30 
-      focus:outline-none focus:ring-2 focus:ring-secondary/50 placeholder-purple-200/60 transition-shadow duration-300 
+              className="block w-full resize-none bg-inherit text-font border border-purple-300 border-opacity-30 outline-transparent
+      focus:outline-none focus:ring-2 focus:ring-pink-300/50 placeholder-purple-200/60 transition-shadow duration-300 focus:border-transparent;
       ease-in-out hover:shadow-lg hover:shadow-secondary/40 overflow-y-auto p-3 rounded-md 
-      min-h-[40px] sm:min-h-[60px] md:min-h-[80px] max-h-[30vh]`}
-              style={{
-                height: "auto",
-              }}
-            />{" "}
+      min-h-[40px] sm:min-h-[60px] md:min-h-[80px] max-h-[30vh]"
+              style={{ height: "auto" }}
+            />
             {isStreaming ? (
               <Button
                 type="button"
                 variant="destructive"
                 size="icon"
                 onClick={() => setIsStreaming(false)}
-                className="w-10 h-10"
+                className="w-10 h-10 bg-gradient-to-r from-primary to-secondary "
               >
                 <StopCircle className="h-5 w-5" />
               </Button>
             ) : (
-              <Button
+              <GradientButton
                 type="submit"
-                size="icon"
-                className="w-10 h-10 bg-[#313244] hover:bg-[#414458]"
+                className="w-10 h-10"
+                color={"text-font"}
+                fromColor={"from-primary"}
+                toColor={"to-secondary"}
+                width={10}
+                height={10}
               >
-                <Send className="h-5 w-5" />
-              </Button>
+                <Send className="h-6 w-6" />
+              </GradientButton>
             )}
           </div>
         </form>

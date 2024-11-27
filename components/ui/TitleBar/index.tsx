@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Minus,
   X,
@@ -28,8 +28,23 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
   const appWindow = getCurrentWindow();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Function to update stroke-dasharray dynamically
+  const updateCircleStroke = (id: string, value: number) => {
+    const circle = document.querySelector(`#${id}-circle`);
+    if (circle) {
+      // Calculate stroke-dasharray as a percentage of the circle's circumference
+      const dashArray = (value / 100) * 81.68; // 81.68 is the circumference of the circle
+      console.log(
+        `Updating circle ${id} with value: ${value}, dashArray: ${dashArray}`
+      );
+      circle.setAttribute("stroke-dasharray", `${dashArray} 81.68`);
+    } else {
+      console.error(`Circle with id ${id} not found`);
+    }
+  };
+
   // Start listening for resource stats immediately
-  React.useEffect(() => {
+  useEffect(() => {
     const updateResourceStats = (payload: statsPayload) => {
       // Update text content
       document.getElementById(
@@ -42,21 +57,14 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
         "vram-usage"
       )!.textContent = `${payload.vram.toFixed(1)}%`;
 
-      // Calculate stroke-dasharray for each circle
-      const updateCircle = (id: string, value: number) => {
-        const circle = document.querySelector(`#${id}-circle`);
-        if (circle) {
-          const dashArray = (value / 100) * 81.68;
-          circle.setAttribute("stroke-dasharray", `${dashArray} 81.68`);
-        }
-      };
-
-      updateCircle("cpu-usage", payload.cpu);
-      updateCircle("ram-usage", payload.ram);
-      updateCircle("vram-usage", payload.vram);
+      // Update circles with new values
+      updateCircleStroke("cpu-usage", payload.cpu);
+      updateCircleStroke("ram-usage", payload.ram);
+      updateCircleStroke("vram-usage", payload.vram);
     };
 
     const unsubscribe = listen<statsPayload>("resource-stats", (event) => {
+      console.log("Resource stats received:", event.payload);
       updateResourceStats(event.payload);
     });
 

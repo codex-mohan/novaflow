@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 interface GradientButtonProps {
   children: React.ReactNode;
   className?: string;
-  width?: number | "full"; // Accepts width as number or 'full' (full-width)
-  height?: number | "full"; // Accepts height as number or 'full' (full-height)
+  width?: number | "full" | string; // Accepts width as number or 'full' (full-width)
+  height?: number | "full" | string; // Accepts height as number or 'full' (full-height)
   type?: "button" | "reset" | "submit"; // Button type prop
   color: string; // Text color (Tailwind color class like 'text-white')
   fromColor: string; // Full Tailwind class for 'from' (e.g., 'from-purple-600')
@@ -40,14 +40,14 @@ const GradientButton: React.FC<GradientButtonProps> = ({
     <div className={cn("relative group", className)}>
       <div
         className={cn(
-          "-z-2 absolute -inset-2 rounded-lg opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-75 blur-2xl will-change-transform",
+          "-z-2 absolute -inset-2 rounded-md opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-75 blur-2xl will-change-transform",
           gradientClass
         )}
       ></div>
       <button
         type={type}
         className={cn(
-          "z-1 relative flex items-center justify-center rounded-lg transition-colors px-6 py-2 duration-300 ease-in-out",
+          "z-1 relative inline-flex gap-2 whitespace-nowrap items-center justify-center rounded-md transition-colors px-6 py-2 duration-300 ease-in-out [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
           hoverGradientClass,
           `h-${typeof height === "number" ? height : "full"}`,
           `w-${typeof width === "number" ? width : "full"}`,

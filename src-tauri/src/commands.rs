@@ -1,10 +1,10 @@
 use crate::utils::get_database_path;
 use serde_json::json;
 use std::result::Result::Ok;
-use sysinfo::{CpuRefreshKind, RefreshKind, System};
 use tauri::{AppHandle, Emitter, EventTarget};
 use tracing::{error, info};
 
+use crate::db::conversation_db::ConversationDatabase;
 use crate::db::user_db::{User, UserDatabase};
 
 #[tauri::command]
@@ -99,4 +99,18 @@ pub async fn login_user(username: String, password: String) -> Result<serde_json
             Err(format!("Error logging in: {:?}", e))
         }
     }
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn update_conversation_db() -> Result<(), String> {
+    info!("Updating conversation database...");
+    let database_path = get_database_path("db").display().to_string();
+
+    // Ensure the database is initialized
+    if let Err(e) = ConversationDatabase::initialize(&database_path).await {
+        error!("Failed to initialize database: {:?}", e);
+        return Err(format!("Database initialization failed: {:?}", e));
+    }
+
+    Ok(())
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,6 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import GradientButton from "@/components/ui/GradientButton";
+import { useAuthStore } from "@/store/auth-store"; // Import your Zustand store
 
 const settingsOptions = [
   { label: "Profile", icon: <User /> },
@@ -48,9 +49,21 @@ export function SettingsDialog({
 }) {
   const [selectedCategory, setSelectedCategory] = useState("Profile");
   const [username, setUsername] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [notifications, setNotifications] = useState(false);
   const { setTheme } = useTheme();
+
+  // Access the user data from Zustand store
+  const user = useAuthStore((state) => state.getUser());
+
+  useEffect(() => {
+    if (user) {
+      // Populate username and password with the user's data when the user is available
+      setUsername(user?.username || ""); // Assuming `username` is a field in the user object
+      setPassword(""); // Reset password (or handle securely in actual implementation)
+    }
+  }, [user]);
 
   const handleSave = () => {
     console.log("Saving settings:", { username, notifications });
@@ -90,10 +103,10 @@ export function SettingsDialog({
           {/* Main Content */}
           <div className="flex-1 p-6">
             <h3 className="text-xl font-semibold">{selectedCategory}</h3>
-            <div className="mt-4">
+            <div className="mt-4 text-font">
               {selectedCategory === "Profile" && (
                 <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="username" className="text-right">
+                  <Label htmlFor="username" className="text-left">
                     Username
                   </Label>
                   <Input
@@ -102,13 +115,24 @@ export function SettingsDialog({
                     onChange={(e) => setUsername(e.target.value)}
                     className="col-span-3"
                   />
-                  <Label htmlFor="password" className="text-right">
+                  <Label htmlFor="current-password" className="text-left">
+                    Current Password
+                  </Label>
+                  <Input
+                    id="current-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="col-span-3"
+                  />
+                  <Label htmlFor="password" className="text-left">
                     Password
                   </Label>
                   <Input
                     id="password"
+                    type="password"
                     value={password}
-                    onChange={(e) => setUsername(e.target.value)}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="col-span-3"
                   />
                 </div>

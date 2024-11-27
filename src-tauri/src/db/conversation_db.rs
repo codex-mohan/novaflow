@@ -47,16 +47,16 @@ pub struct ConversationDatabase;
 
 impl ConversationDatabase {
     /// Initialize the database and define schemas for `conversation` and `message`
-    pub async fn initialize() -> Result<()> {
+    pub async fn initialize(db_path: &str) -> Result<()> {
         // Initialize the database connection if not already done
-        Database::initialize("./data", "novaflow", "conversations").await?;
+        Database::initialize(db_path, "novaflow", "conversations").await?;
 
         let db = Database::get_connection();
         let conn = db.lock().await;
 
         // Define the conversation table with relation to user
         conn.query("DEFINE TABLE conversation SCHEMAFUL;").await?;
-        conn.query("DEFINE FIELD user_id ON conversation TYPE record(user);")
+        conn.query("DEFINE FIELD user_id ON conversation TYPE record<user>;")
             .await?;
         conn.query("DEFINE FIELD title ON conversation TYPE string;")
             .await?;
@@ -67,11 +67,12 @@ impl ConversationDatabase {
 
         // Define the message table with relation to conversation
         conn.query("DEFINE TABLE message SCHEMAFUL;").await?;
-        conn.query("DEFINE FIELD conversation_id ON message TYPE record(conversation);")
+        conn.query("DEFINE FIELD conversation_id ON message TYPE record<conversation>;")
             .await?;
         conn.query("DEFINE FIELD role ON message TYPE string;")
             .await?;
-        conn.query("DEFINE FIELD content ON message TYPE object;")
+        // Modify the content field to be an array of objects
+        conn.query("DEFINE FIELD content ON message TYPE array<object>;")
             .await?;
         conn.query("DEFINE FIELD timestamp ON message TYPE datetime;")
             .await?;
@@ -101,12 +102,51 @@ impl ConversationDatabase {
         let db = Database::get_connection();
         let conn = db.lock().await;
 
-        let content_json = serde_json::to_string(&message.content).unwrap();
+        // Prepare the content as a JSON array (list of objects)
+        let content_json = match &message.content {
+            MessageContent::MultiModal { text, images } => {
+                let mut messages = vec![serde_json::json!({
+                    "role": message.role,
+                    "content": text,
+                    "images": images.iter().map(|img| {
+                        serde_json::json!({
+                            "base64_image": img.base64_image,
+                            "caption": img.caption
+                        })
+                    }).collect::<Vec<_>>()
+                })];
+                // If it's a multi-modal message, we include the role and content wrapped in the list
+                serde_json::to_string(&messages).unwrap()
+            }
+            MessageContent::Text { text } => {
+                let messages = vec![serde_json::json!({
+                    "role": message.role,
+                    "content": text,
+                    "images": []  // Empty array for images if it's just text
+                })];
+                serde_json::to_string(&messages).unwrap()
+            }
+            MessageContent::Image {
+                base64_image,
+                caption,
+            } => {
+                let messages = vec![serde_json::json!({
+                    "role": message.role,
+                    "content": "",
+                    "images": [{
+                        "base64_image": base64_image,
+                        "caption": caption
+                    }]
+                })];
+                serde_json::to_string(&messages).unwrap()
+            }
+        };
 
+        // Create the message entry with content as an array of objects
         let query = format!(
-            "CREATE message SET conversation_id = conversation:{}, role = '{}', content = {}, timestamp = time::now()",
-            conversation_id, message.role, content_json
-        );
+        "CREATE message SET conversation_id = conversation:{}, role = '{}', content = {}, timestamp = time::now()",
+        conversation_id, message.role, content_json
+    );
 
         conn.query(&query).await?;
         Ok(())
