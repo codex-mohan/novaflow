@@ -91,7 +91,7 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="relative flex-1 flex flex-col h-full">
         <div className="flex-1 overflow-hidden">
-          <div className="space-y-4 p-2 mx-auto">
+          <div className="space-y-3 space-x-3 mx-auto">
             {activeView === "conversation" && <Conversation />}
             {activeView === "node-editor" && <NodeEditor />}
             {activeView === "settings" && <SettingsView />}
