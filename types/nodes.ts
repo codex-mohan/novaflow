@@ -9,16 +9,13 @@ export type PositionLoggerData = {
   label: string;
 };
 
-import { NodeProps } from "@xyflow/react";
-
-export interface LMProviderNode {
+export type LMProviderData = {
   id: string;
-  data: {
-    title: string;
-    modelProvider: "local" | "ollama" | "groq" | "openai"; // LLM provider options
-    topK: number; // Top K value
-    // Add other relevant LLM settings here
-  };
+
+  title: string;
+  modelProvider: "local" | "ollama" | "groq" | "openai"; // LLM provider options
+  topK: number; // Top K value
+  // Add other relevant LLM settings here
   sourcePosition?: Position;
   targetPosition?: Position;
   width?: number;
@@ -29,7 +26,8 @@ export interface LMProviderNode {
   deletable?: boolean;
   draggable?: boolean;
   parentId?: string;
-}
+};
 
 export type NormalNode = Node<NormalNodeData>;
 export type PositionLoggerNode = Node<PositionLoggerData>;
+export type LMProviderNode = Node<LMProviderData>;

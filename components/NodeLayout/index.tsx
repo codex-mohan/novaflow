@@ -11,6 +11,8 @@ import {
   useEdgesState,
   type OnConnect,
   type ColorMode,
+  ReactFlowProvider,
+  Position,
 } from "@xyflow/react";
 
 import { initialNodes, nodeTypes } from "../nodes";
@@ -34,9 +36,10 @@ export default function NodeLayout() {
   );
 
   return (
-    <div className="w-full h-full">
+    <ReactFlowProvider>
       <ReactFlow
         className="w-full h-full absolute"
+        style={{ position: "absolute" }}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
@@ -53,6 +56,6 @@ export default function NodeLayout() {
         <Controls className="border border-pruple-300" />
         <MiniMap className="bg-base" />
       </ReactFlow>
-    </div>
+    </ReactFlowProvider>
   );
 }

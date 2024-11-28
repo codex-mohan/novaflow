@@ -1,7 +1,7 @@
 import { NodeTypes } from "@xyflow/react";
 import PositionLoggerNode from "./PositionLoggerNode";
 import NormalNode from "./NormalNode";
-// import LMProviderNode from "./LMProviderNode"; // Import the LMProviderNode component
+import LMProviderNode from "./LMProviderNode"; // Import the LMProviderNode component
 
 export const initialNodes = [
   {
@@ -27,5 +27,5 @@ export const initialNodes = [
 export const nodeTypes: NodeTypes = {
   normal: NormalNode,
   "position-logger": PositionLoggerNode,
-  // "lm-provider": LMProviderNode, // Add LMProviderNode to the nodeTypes mapping
+  "lm-provider": LMProviderNode, // Add LMProviderNode to the nodeTypes mapping
 };
