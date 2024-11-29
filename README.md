@@ -1,5 +1,5 @@
 # Documentation for Novaflow
-### This repo will be dedicated for keeping tract of documemntation. 
+
 
 # 📝 NovaFlow: Intelligent Voice Assistant
 
