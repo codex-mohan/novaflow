@@ -68,7 +68,6 @@ export default function NodeLayout() {
                 id: "serverUrl",
                 label: "Server URL",
                 placeholder: "http://localhost:8000",
-                visibleWhen: { modelProvider: ["local"] },
               },
               {
                 type: "slider",
