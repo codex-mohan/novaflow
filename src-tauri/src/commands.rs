@@ -4,7 +4,7 @@ use std::result::Result::Ok;
 use tauri::{AppHandle, Emitter, EventTarget};
 use tracing::{error, info};
 
-use crate::db::conversation_db::ConversationDatabase;
+use crate::db::conversation_db::{Conversation, ConversationDatabase};
 use crate::db::user_db::{User, UserDatabase};
 
 #[tauri::command]
@@ -113,4 +113,31 @@ pub async fn update_conversation_db() -> Result<(), String> {
     }
 
     Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn create_conversation(user_id: String) -> Result<String, String> {
+    let database_path = get_database_path("db").display().to_string();
+    if let Err(e) = ConversationDatabase::initialize(&database_path).await {
+        return Err(format!("Database initialization failed: {:?}", e));
+    }
+    let title = "default_conversation"; // Use default title
+    let conversation_id = ConversationDatabase::create_conversation(&user_id, title)
+        .await
+        .map_err(|e| format!("{:?}", e))?;
+    Ok(conversation_id)
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn load_conversations(user_id: String) -> Result<Vec<Conversation>, String> {
+    let database_path = get_database_path("db").display().to_string();
+    if let Err(e) = ConversationDatabase::initialize(&database_path).await {
+        return Err(format!("Database initialization failed: {:?}", e));
+    }
+
+    let conversations = match ConversationDatabase::get_user_conversations(&user_id).await {
+        Ok(conversations) => conversations,
+        Err(e) => return Err(format!("Failed to get user conversations: {:?}", e)),
+    };
+    Ok(conversations)
 }

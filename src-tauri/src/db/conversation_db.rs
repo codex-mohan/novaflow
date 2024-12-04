@@ -58,7 +58,11 @@ impl ConversationDatabase {
         conn.query("DEFINE TABLE conversation SCHEMAFUL;").await?;
         conn.query("DEFINE FIELD user_id ON conversation TYPE record<user>;")
             .await?;
-        conn.query("DEFINE FIELD title ON conversation TYPE string;")
+        conn.query(
+            "DEFINE FIELD title ON conversation TYPE string ASSERT $value != NONE AND $value != ''",
+        )
+        .await?;
+        conn.query("DEFINE INDEX idx_title ON conversation FIELDS title UNIQUE")
             .await?;
         conn.query("DEFINE FIELD created_at ON conversation TYPE datetime;")
             .await?;
@@ -166,5 +170,21 @@ impl ConversationDatabase {
         let messages: Vec<Message> = result.take(0)?;
 
         Ok(messages)
+    }
+
+    /// Retrieve all conversations for a given user ID
+    pub async fn get_user_conversations(user_id: &str) -> Result<Vec<Conversation>> {
+        let db = Database::get_connection();
+        let conn = db.lock().await;
+
+        let query = format!(
+            "SELECT * FROM conversation WHERE user_id = user:{} ORDER BY created_at ASC",
+            user_id
+        );
+
+        let mut result = conn.query(&query).await?;
+        let conversations: Vec<Conversation> = result.take(0)?;
+
+        Ok(conversations)
     }
 }

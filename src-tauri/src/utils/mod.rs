@@ -3,12 +3,14 @@ pub mod llms;
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _; // For the encode method
 use image::{DynamicImage, ImageFormat};
+use log::info;
 use reqwest::Client;
 use serde::Deserialize;
 use std::error::Error;
 use std::io::Cursor;
 use std::path::Path;
 use std::path::PathBuf;
+use std::process::Command;
 use sysinfo::System;
 use sysinfo::{CpuRefreshKind, RefreshKind};
 use tauri::{AppHandle, Emitter};
@@ -80,6 +82,29 @@ pub async fn start_resource_monitor(app: AppHandle) {
     });
 }
 
+fn get_gpu_stats() -> (f32, f32) {
+    let output = Command::new("nvidia-smi")
+        .arg("--query-gpu=utilization.gpu,memory.used,memory.total")
+        .arg("--format=csv,noheader,nounits")
+        .output()
+        .expect("Failed to execute nvidia-smi");
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let mut gpu_usage = 0.0;
+    let mut vram_usage = 0.0;
+
+    for line in stdout.lines() {
+        let values: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
+        if let [gpu, mem_used, mem_total] = &values[..] {
+            gpu_usage = gpu.parse::<f32>().unwrap_or(0.0);
+            let mem_used: f32 = mem_used.parse().unwrap_or(0.0);
+            let mem_total: f32 = mem_total.parse().unwrap_or(0.0);
+            vram_usage = (mem_used / mem_total) * 100.0;
+        }
+    }
+    (gpu_usage, vram_usage)
+}
+
 pub fn get_system_stats() -> statsPayload {
     let mut sys = System::new_all();
     sys.refresh_all();
@@ -102,9 +127,10 @@ pub fn get_system_stats() -> statsPayload {
     let memory_usage = (used_memory / total_memory) * 100.0;
 
     // GPU Info (example using nvidia-smi, you'll need to add nvidia-smi crate)
-    // For this example, returning placeholder values
-    let gpu_usage = 0.0;
-    let vram_usage = 0.0;
+    // GPU Usage
+
+    let (gpu_usage, vram_usage) = get_gpu_stats();
+    info!("Vram Usage: {}", vram_usage);
 
     statsPayload {
         cpu: cpu_usage,
