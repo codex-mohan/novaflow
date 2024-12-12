@@ -14,6 +14,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { listen } from "@tauri-apps/api/event";
 import { SettingsDialog } from "../../dialogs/SettingsModal";
 import Image from "next/image";
+// import usePathname  from "next/navigation"; // Import useRouter
 
 type statsPayload = {
   cpu: number;
@@ -34,9 +35,9 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
     if (circle) {
       // Calculate stroke-dasharray as a percentage of the circle's circumference
       const dashArray = (value / 100) * 81.68; // 81.68 is the circumference of the circle
-      console.log(
+      /* console.log(
         `Updating circle ${id} with value: ${value}, dashArray: ${dashArray}`
-      );
+      ); */
       circle.setAttribute("stroke-dasharray", `${dashArray} 81.68`);
     } else {
       console.error(`Circle with id ${id} not found`);
@@ -64,7 +65,7 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
     };
 
     const unsubscribe = listen<statsPayload>("resource-stats", (event) => {
-      console.log("Resource stats received:", event.payload);
+      // console.log("Resource stats received:", event.payload);
       updateResourceStats(event.payload);
     });
 
@@ -82,7 +83,7 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
       className="flex items-center justify-between h-10 bg-base text-font select-none z-50"
       data-tauri-drag-region
     >
-      <Image src={icon} alt={title} width={64} height={64} />
+      <Image src={icon} alt={title} width={48} height={48} />
       <div className="w-32"></div>
 
       <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">

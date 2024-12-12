@@ -19,9 +19,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AttachmentType } from "@/types/file";
 
 // Don't forget to import styles for KaTeX
 import "katex/dist/katex.min.css";
+import { colorBrewer } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 interface MessageContent {
   type: "text" | "image" | "file";
@@ -31,12 +33,14 @@ interface MessageContent {
     mime_type?: string;
     file_name?: string;
   };
+  images?: AttachmentType[];
 }
 
 interface ChatMessageProps {
   role: "user" | "assistant" | "system";
   contents: MessageContent[];
   timestamp: Date;
+  images?: AttachmentType[];
 }
 
 const CodeBlock = ({
@@ -140,12 +144,30 @@ const ImageBlock = ({
 const ContentRenderer = ({
   content,
   role,
+  images,
 }: {
   content: string;
   role: "user" | "assistant" | "system";
+  images?: AttachmentType[];
 }) => {
   if (role === "user") {
-    return <div className="text-wrap break-words">{content}</div>;
+    console.log("Content Render->Images Received: ", images);
+    return (
+      <div className="text-wrap break-words">
+        {content}
+        {images && images.length > 0 && (
+          <div className="flex flex-wrap">
+            {images.map((image, index) => (
+              <ImageBlock
+                key={index}
+                content={`data:image/${image.type};base64,${image.content}`}
+                metadata={image.metadata}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    );
   }
   if (role === "assistant") {
     return (
@@ -167,7 +189,12 @@ const ContentRenderer = ({
             );
           },
           img({ alt, src }) {
-            return <ImageBlock content={src as string} metadata={{ alt }} />;
+            return (
+              <ImageBlock
+                content={`data:image/png;base64,${src}`}
+                metadata={{ alt }}
+              />
+            );
           },
         }}
       />
@@ -251,6 +278,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   role,
   contents,
   timestamp,
+  images,
 }) => {
   return (
     <div
@@ -289,6 +317,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
               key={index}
               content={content.content}
               role={role}
+              images={images}
             />
           ))}
 

@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 import QueueBar from "@/components/ui/queuebar";
 
-const NodeLayout = dynamic(() => import("@/components/NodeLayout"), {
+const NodeLayout = dynamic(() => import("@/components/views/NodeEditor"), {
   ssr: false,
   loading: () => <p>Loading...</p>,
 });

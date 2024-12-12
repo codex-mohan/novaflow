@@ -3,7 +3,7 @@
 
 import { use, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, Chrome, Github, User2 } from "lucide-react";
+import { Lock, Chrome, Github, User2 } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 import { useRouter } from "next/navigation";
 import { invoke } from "@tauri-apps/api/core";
@@ -92,7 +92,7 @@ export default function SignInPage() {
               onClick={handleGitHubLogin}
             >
               <Github size={20} className="mr-2" />
-              Github
+              Github 
             </GradientButton>
             <GradientButton
               className="flex-1 flex items-center justify-center"

@@ -4,167 +4,17 @@ import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function SplashScreen() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    let canvas = canvasRef?.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    canvas.width = window?.innerWidth;
-    canvas.height = window?.innerHeight;
-
-    const nodes: Node[] = [];
-    const nodeCount = 150;
-    const connectionDistance = 100;
-
-    class Node {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-      color: string;
-
-      constructor() {
-        this.x = Math.random() * (canvas?.width ?? window.innerWidth);
-        this.y = Math.random() * (canvas?.height ?? window.innerHeight);
-        this.size = Math.random() * 2 + 2;
-        this.speedX = (Math.random() - 0.5) * 0.5;
-        this.speedY = (Math.random() - 0.5) * 0.5;
-        this.color = ["#8B5CF6", "#EC4899", "#EF4444", "#3B82F6", "#10B981"][
-          Math.floor(Math.random() * 5)
-        ];
-      }
-
-      update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-
-        if (this.x < 0 || this.x > (canvas?.width ?? window.innerWidth))
-          this.speedX *= -1;
-        if (this.y < 0 || this.y > (canvas?.height ?? window.innerHeight))
-          this.speedY *= -1;
-      }
-
-      draw() {
-        if (!ctx) return;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
-      }
-    }
-
-    for (let i = 0; i < nodeCount; i++) {
-      nodes.push(new Node());
-    }
-
-    let animationFrameId: number;
-
-    function animate() {
-      if (!ctx) return;
-      ctx.clearRect(
-        0,
-        0,
-        canvas?.width ?? window.innerWidth,
-        canvas?.height ?? window.innerHeight
-      );
-
-      for (let i = 0; i < nodes.length; i++) {
-        nodes[i].update();
-        nodes[i].draw();
-
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < connectionDistance) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(255, 255, 255, ${
-              0.2 - (distance / connectionDistance) * 0.2
-            })`;
-            ctx.lineWidth = 1.6;
-            ctx.moveTo(nodes[i].x, nodes[i].y);
-            ctx.lineTo(nodes[j].x, nodes[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-
-      animationFrameId = requestAnimationFrame(animate);
-    }
-
-    animate();
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Loading progress simulation for 3 seconds
-    const loadDuration = 3000; // 3 seconds
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        const newProgress = Math.min(prev + 10, 100);
-        if (newProgress >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsLoading(false);
-          }, 300); // Allow a short delay before closing
-        }
-        return newProgress;
-      });
-    }, loadDuration / 10); // Update progress every 300ms
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("resize", handleResize);
-      clearInterval(interval); // Clean up the interval on unmount
-    };
-  }, []);
-
   return (
     <div className="relative p-5 m-2 flex flex-col items-center justify-center min-h-screen overflow-hidden bg-base">
-      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="z-10 text-center flex flex-col items-center"
-      >
-        <Logo isLoading={isLoading} />
-        <motion.h1
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="text-5xl font-bold mb-4 mt-8 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-pink-500 to-red-500"
-        >
+      <div className="z-10 text-center flex flex-col items-center">
+        <Logo isLoading={false} />
+        <h1 className="text-5xl font-bold mb-4 mt-8 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-pink-500 to-red-500">
           NovaFlow
-        </motion.h1>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-xl mb-8 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-pink-500 to-red-500"
-        >
+        </h1>
+        <p className="text-xl mb-8 bg-clip-text text-transparent bg-gradient-to-r from-violet-600 via-pink-500 to-red-500">
           AI-powered modular Assistant
-        </motion.p>
-        {isLoading ? <LoadingIndicator /> : null}
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          className="h-4 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 rounded-full"
-          style={{ width: "200px", maxWidth: "200px" }}
-        />
-      </motion.div>
+        </p>
+      </div>
     </div>
   );
 }
@@ -203,25 +53,5 @@ function Logo({ isLoading }: { isLoading: boolean }) {
       />
       <circle cx="50" cy="50" r="10" fill="url(#logoGradient)" />
     </svg>
-  );
-}
-
-function LoadingIndicator() {
-  return (
-    <div className="flex space-x-2 justify-center items-center mb-4">
-      {[...Array(3)].map((_, i) => (
-        <motion.div
-          key={i}
-          initial={{ y: 0 }}
-          animate={{ y: [-10, 0, -10] }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            delay: i * 0.2,
-          }}
-          className="w-3 h-3 bg-gradient-to-r from-violet-600 via-pink-500 to-red-500 rounded-full"
-        />
-      ))}
-    </div>
   );
 }

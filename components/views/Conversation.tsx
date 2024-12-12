@@ -9,8 +9,6 @@ import { ChatMessage } from "@/components/chat/ChatMessage";
 import { AttachmentMenu } from "@/components/menus/AttachmentMenu";
 import { useToast } from "@/hooks/use-toast";
 import { Provider, Ollama } from "@/lib/provider";
-
-// Don't forget to import styles for KaTeX
 import "katex/dist/katex.min.css";
 import GradientButton from "../ui/GradientButton";
 
@@ -39,9 +37,9 @@ type Message = {
 
 export default function Conversation() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState<AttachmentType[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const inputRef = useRef("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const { toast } = useToast();
@@ -58,8 +56,8 @@ export default function Conversation() {
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setInput(e.target.value);
-      requestAnimationFrame(() => resizeTextarea());
+      inputRef.current = e.target.value;
+      resizeTextarea();
     },
     [resizeTextarea]
   );
@@ -82,12 +80,14 @@ export default function Conversation() {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!input.trim() && attachments.length === 0) return;
+      const input = inputRef.current.trim();
+      textareaRef.current!.value = "";
+      if (!input && attachments.length === 0) return;
 
       const userMessage: Message = {
         id: nanoid(),
         role: "user",
-        contents: input.trim()
+        contents: input
           ? [{ type: "text", content: input } as MessageContent]
           : [],
         images: attachments,
@@ -95,7 +95,7 @@ export default function Conversation() {
       };
 
       setMessages((prev) => [...prev, userMessage]);
-      setInput("");
+      inputRef.current = "";
       setAttachments([]);
       setIsStreaming(true);
 
@@ -129,7 +129,7 @@ export default function Conversation() {
         const payload = {
           model: "llama3.2-vision",
           messages: [
-            { role: "user", content: systemMessage },
+            { role: "system", content: systemMessage },
             ...history.map((msg) => ({
               role: msg.role,
               content: msg.content,
@@ -137,8 +137,6 @@ export default function Conversation() {
             })),
           ],
         };
-
-        console.log("Constructed Payload:", JSON.stringify(payload, null, 2));
 
         const response = await fetch("http://localhost:11434/api/chat", {
           method: "POST",
@@ -201,9 +199,10 @@ export default function Conversation() {
         });
       } finally {
         setIsStreaming(false);
+        console.log("messages: ", messages);
       }
     },
-    [input, messages, systemMessage, attachments, toast]
+    [messages, systemMessage, attachments, toast]
   );
 
   const handleAttachment = async (type: string) => {
@@ -285,6 +284,7 @@ export default function Conversation() {
               key={message.id}
               role={message.role}
               contents={message.contents}
+              images={message.images}
               timestamp={message.timestamp}
             />
           ))}
@@ -296,26 +296,24 @@ export default function Conversation() {
           <div className="flex items-center space-x-2">
             <AttachmentMenu onSelect={handleAttachment} />
             <textarea
+              id="text-box"
               ref={textareaRef}
-              value={input}
               onChange={handleInputChange}
               placeholder="Type your message here..."
               spellCheck="true"
-              className="block w-full resize-none bg-inherit text-font border border-purple-300 border-opacity-30 outline-transparent
+              className="block w-full resize-none bg-inherit text-font border border-purple-300 border-opacity-30 outline-none
       focus:outline-none focus:ring-2 focus:ring-pink-300/50 placeholder-purple-200/60 transition-shadow duration-300 focus:border-transparent;
       ease-in-out hover:shadow-lg hover:shadow-secondary/40 overflow-y-auto p-3 rounded-md 
-      min-h-[40px] sm:min-h-[60px] md:min-h-[80px] max-h-[30vh]"
-              style={{ height: "auto" }}
+      min-h-[40px] sm:min-h-[50px]"
             />
             {isStreaming ? (
               <Button
-                type="button"
-                variant="destructive"
-                size="icon"
                 onClick={() => setIsStreaming(false)}
-                className="w-10 h-10 bg-gradient-to-r from-primary to-secondary "
+                type="button"
+                className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-2 px-4 rounded"
               >
-                <StopCircle className="h-5 w-5" />
+                <StopCircle className="mr-2" />
+                Stop
               </Button>
             ) : (
               <GradientButton

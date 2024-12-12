@@ -19,15 +19,23 @@ import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { Position } from "@xyflow/react";
+import ConversationList from "@/components/views/ConversationList"; // Import the ConversationList component
 
 const Dashboard = () => {
   const [activeView, setActiveView] = useState("conversation");
+  const [showConversationList, setShowConversationList] = useState(false); // New state for conversation list visibility
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { toast } = useToast();
 
   const handleIconClick = useCallback((name: string) => {
-    setActiveView(name);
+    if (name === "conversation") {
+      setShowConversationList(true); // Show conversation list when the conversation tab is clicked
+    } else {
+      setActiveView(name);
+      setShowConversationList(false); // Close conversation list if another view is selected
+    }
+    setActiveView(name); // Set the active view
   }, []);
 
   const handleUserMenu = (option: string) => {
@@ -98,6 +106,15 @@ const Dashboard = () => {
             {activeView === "help" && <Help />}
           </div>
         </div>
+        {activeView === "conversation" &&
+          showConversationList && ( // Render the conversation list only when active view is conversation
+            <div className="absolute inset-0 bg-black bg-opacity-50 z-10">
+              <ConversationList
+                onClose={() => setShowConversationList(false)}
+              />{" "}
+              {/* Pass close handler */}
+            </div>
+          )}
       </div>
     </div>
   );
