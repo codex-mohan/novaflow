@@ -27,7 +27,7 @@ export const AttachmentMenu: React.FC<AttachmentMenuProps> = ({ onSelect }) => {
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-10 h-10 hover:bg-[#313244]"
+                className="w-10 h-10 hover:bg-base-hover rounded-full cursor-default select-none"
               >
                 <Paperclip className="h-5 w-5" />
               </Button>

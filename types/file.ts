@@ -1,5 +1,5 @@
 export type AttachmentType = {
-  type: "image";
+  type: "image" | "text" | "file";
   content: string;
   metadata: {
     alt?: string;

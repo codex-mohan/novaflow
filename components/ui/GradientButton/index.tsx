@@ -41,7 +41,8 @@ const GradientButton: React.FC<GradientButtonProps> = ({
       <div
         className={cn(
           "-z-2 absolute -inset-2 rounded-md opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-75 blur-2xl will-change-transform",
-          gradientClass
+          gradientClass,
+          className
         )}
       ></div>
       <button
@@ -53,7 +54,8 @@ const GradientButton: React.FC<GradientButtonProps> = ({
           `w-${typeof width === "number" ? width : "full"}`,
           "active:scale-95 active:shadow-inner active:opacity-90 active:brightness-90 transition-transform duration-300 ease-in-out",
           gradientClass,
-          color // Pass in color directly (e.g., text-white)
+          color,
+          className // Pass in color directly (e.g., text-white)
         )}
         onClick={onClick}
       >

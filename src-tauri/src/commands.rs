@@ -1,13 +1,12 @@
 use crate::utils::get_database_path;
-use serde_json::json;
-use std::result::Result::Ok;
-use tauri::{AppHandle, Emitter, EventTarget};
+use serde_json::{json, Value};
+use tauri::{command, AppHandle, Emitter, EventTarget, State};
 use tracing::{error, info};
 
 use crate::db::conversation_db::{Conversation, ConversationDatabase};
-use crate::db::user_db::{User, UserDatabase};
+use crate::db::user_db::UserDatabase;
 
-#[tauri::command]
+#[command]
 pub fn open_file(app: AppHandle, path: std::path::PathBuf) {
     app.emit_filter("open-file", path, |target| match target {
         EventTarget::WebviewWindow { label } => label == "main" || label == "file-viewer",
@@ -16,7 +15,7 @@ pub fn open_file(app: AppHandle, path: std::path::PathBuf) {
     .unwrap();
 }
 
-#[tauri::command(rename_all = "snake_case")]
+#[command(rename_all = "snake_case")]
 pub async fn signup_user(
     first_name: String,
     last_name: String,
@@ -60,7 +59,7 @@ pub async fn signup_user(
     }
 }
 
-#[tauri::command(rename_all = "snake_case")]
+#[command(rename_all = "snake_case")]
 pub async fn login_user(username: String, password: String) -> Result<serde_json::Value, String> {
     info!("Logging in user...");
 
@@ -101,7 +100,7 @@ pub async fn login_user(username: String, password: String) -> Result<serde_json
     }
 }
 
-#[tauri::command(rename_all = "snake_case")]
+#[command(rename_all = "snake_case")]
 pub async fn update_conversation_db() -> Result<(), String> {
     info!("Updating conversation database...");
     let database_path = get_database_path("db").display().to_string();
@@ -115,20 +114,20 @@ pub async fn update_conversation_db() -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command(rename_all = "snake_case")]
+#[command(rename_all = "snake_case")]
 pub async fn create_conversation(user_id: String) -> Result<String, String> {
     let database_path = get_database_path("db").display().to_string();
     if let Err(e) = ConversationDatabase::initialize(&database_path).await {
         return Err(format!("Database initialization failed: {:?}", e));
     }
     let title = "default_conversation"; // Use default title
-    let conversation_id = ConversationDatabase::create_conversation(&user_id, title)
+    let conversation_id = ConversationDatabase::create_conversation(user_id, title.to_string())
         .await
         .map_err(|e| format!("{:?}", e))?;
     Ok(conversation_id)
 }
 
-#[tauri::command(rename_all = "snake_case")]
+#[command(rename_all = "snake_case")]
 pub async fn load_conversations(user_id: String) -> Result<Vec<Conversation>, String> {
     let database_path = get_database_path("db").display().to_string();
     if let Err(e) = ConversationDatabase::initialize(&database_path).await {
@@ -140,4 +139,30 @@ pub async fn load_conversations(user_id: String) -> Result<Vec<Conversation>, St
         Err(e) => return Err(format!("Failed to get user conversations: {:?}", e)),
     };
     Ok(conversations)
+}
+
+#[command(rename_all = "snake_case")]
+pub async fn add_message_to_conversation(
+    user: String, // Access the current user's data
+    conversation_id: String,
+    role: String,
+    content: Value, // Assuming content is in JSON format
+) -> Result<String, String> {
+    // Check if the user exists (optional, but ensures you handle state properly)
+    if user.is_empty() {
+        return Err("User ID is missing".into());
+    }
+
+    // Add the message to the conversation
+    let message_id = match ConversationDatabase::add_message(&conversation_id, role, content).await
+    {
+        Ok(message) => message,
+        Err(e) => {
+            return Err(format!(
+                "Failed to add message to conversation - {}: {:?}",
+                conversation_id, e
+            ))
+        }
+    };
+    Ok(message_id)
 }

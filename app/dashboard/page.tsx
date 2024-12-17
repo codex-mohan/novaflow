@@ -23,17 +23,17 @@ import ConversationList from "@/components/views/ConversationList"; // Import th
 
 const Dashboard = () => {
   const [activeView, setActiveView] = useState("conversation");
-  const [showConversationList, setShowConversationList] = useState(false); // New state for conversation list visibility
+  // const [showConversationList, setShowConversationList] = useState(false); // New state for conversation list visibility
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { toast } = useToast();
 
   const handleIconClick = useCallback((name: string) => {
     if (name === "conversation") {
-      setShowConversationList(true); // Show conversation list when the conversation tab is clicked
+      // setShowConversationList(true); // Show conversation list when the conversation tab is clicked
     } else {
       setActiveView(name);
-      setShowConversationList(false); // Close conversation list if another view is selected
+      // setShowConversationList(false); // Close conversation list if another view is selected
     }
     setActiveView(name); // Set the active view
   }, []);
@@ -97,24 +97,25 @@ const Dashboard = () => {
       </div>
 
       {/* Main Content */}
-      <div className="relative flex-1 flex flex-col h-full">
-        <div className="flex-1 overflow-hidden">
-          <div className="space-y-3 space-x-3 mx-auto">
-            {activeView === "conversation" && <Conversation />}
-            {activeView === "node-editor" && <NodeEditor />}
-            {activeView === "settings" && <SettingsView />}
-            {activeView === "help" && <Help />}
-          </div>
-        </div>
-        {activeView === "conversation" &&
-          showConversationList && ( // Render the conversation list only when active view is conversation
-            <div className="absolute inset-0 bg-black bg-opacity-50 z-10">
-              <ConversationList
-                onClose={() => setShowConversationList(false)}
-              />{" "}
-              {/* Pass close handler */}
+      <div className="flex flex-1 justify-center align-middle">
+        <div className="relative flex-1 flex flex-col h-full">
+          <div className="flex-1 overflow-hidden">
+            <div className="select-none flex flex-1 space-y-3 space-x-3 mx-auto justify-center align-middle">
+              {activeView === "conversation" && <Conversation />}
+              {activeView === "node-editor" && <NodeEditor />}
+              {activeView === "settings" && <SettingsView />}
+              {activeView === "help" && <Help />}
             </div>
-          )}
+          </div>
+          {/* {activeView === "conversation" &&
+            showConversationList && ( // Render the conversation list only when active view is conversation
+              <div className="absolute inset-0 bg-black bg-opacity-50 z-10">
+                <ConversationList
+                  onClose={() => setShowConversationList(false)}
+                />{" "}
+              </div>
+            )} */}
+        </div>
       </div>
     </div>
   );

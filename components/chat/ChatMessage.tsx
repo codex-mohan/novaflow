@@ -283,7 +283,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   return (
     <div
       className={cn(
-        "flex w-full",
+        "select-none flex w-full",
         role === "user" ? "justify-end" : "justify-start"
       )}
     >

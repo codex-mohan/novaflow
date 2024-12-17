@@ -86,7 +86,7 @@ const TitleBar: React.FC<{ title: string; icon: string }> = ({
       <Image src={icon} alt={title} width={48} height={48} />
       <div className="w-32"></div>
 
-      <div className="absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
+      <div className="select-none absolute left-1/2 transform -translate-x-1/2 pointer-events-none">
         <span className="font-semibold">{title}</span>
       </div>
 
