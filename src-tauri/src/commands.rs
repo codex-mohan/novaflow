@@ -1,6 +1,6 @@
 use crate::utils::get_database_path;
 use serde_json::{json, Value};
-use tauri::{command, AppHandle, Emitter, EventTarget, State};
+use tauri::{command, AppHandle, Emitter, EventTarget};
 use tracing::{error, info};
 
 use crate::db::conversation_db::{Conversation, ConversationDatabase};
