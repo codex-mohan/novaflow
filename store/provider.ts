@@ -1,16 +1,20 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
+type ProviderType = {
+  provider: "ollama" | "openai" | "groq";
+};
+
 interface ProviderState {
-  provider: string;
-  setProvider: (provider: string) => void;
+  provider: ProviderType;
+  setProvider: (provider: ProviderType) => void;
 }
 
 export const useProviderStore = create<ProviderState>()(
   persist(
     (set) => ({
-      provider: "ollama", // Default provider
-      setProvider: (provider: string) => set({ provider }),
+      provider: { provider: "ollama" }, // Default provider
+      setProvider: (provider) => set({ provider: provider }),
     }),
     {
       name: "provider-storage",

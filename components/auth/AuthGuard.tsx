@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore } from '@/store/auth-store';
+import { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuthStore } from "@/store/auth-store";
 
-const publicPaths = ['/auth/signin', '/auth/signup'];
+const publicPaths = ["/auth/signin", "/auth/signup", "/splashscreen"];
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -13,11 +13,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated && !publicPaths.includes(pathname)) {
-      router.push('/auth/signin');
+      router.push("/auth/signin");
     } else if (isAuthenticated && publicPaths.includes(pathname)) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [isAuthenticated, pathname, router]);
 
   return <>{children}</>;
-} 
+}

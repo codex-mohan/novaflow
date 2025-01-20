@@ -4,11 +4,10 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { nanoid } from "nanoid";
 import { Button } from "@/components/ui/button";
 import ScrollArea from "@/components/ui/scroll-area";
-import { Send, StopCircle } from "lucide-react";
+import { Send, Sidebar, StopCircle } from "lucide-react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { AttachmentMenu } from "@/components/menus/AttachmentMenu";
 import { useToast } from "@/hooks/use-toast";
-import { Provider, Ollama } from "@/lib/provider";
 import "katex/dist/katex.min.css";
 import GradientButton from "../ui/GradientButton";
 import {
@@ -19,53 +18,57 @@ import {
   SelectValue,
   SelectContent,
 } from "../ui/select";
+import ConversationList from "@/components/views/ConversationList";
 import { AttachmentType } from "@/types/file";
+import { Message, MessageContent } from "@/types/message";
+import { useAuthStore } from "@/store/auth-store";
 import { useModelsStore } from "@/store/model-store";
+import {
+  useConversationStore,
+  useConversationState,
+} from "@/store/conversation-store";
+import { useMessageStore } from "@/store/messages-store";
+import { invoke } from "@tauri-apps/api/core";
+import { Conversation as ConversationType } from "@/types/conversation";
 
-type MessageContent = {
-  type: "text";
-  content: string;
-};
-
-type Message = {
-  id: string;
+type HistoryType = {
+  message_id: string;
   role: "user" | "assistant" | "system";
   contents: MessageContent[];
-  images?: AttachmentType[];
-  timestamp: Date;
+  timestamp: string;
 };
 
 export default function Conversation() {
-  const [messages, setMessages] = useState<Message[]>([]);
   const [attachments, setAttachments] = useState<AttachmentType[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
-  const inputRef = useRef("");
+  const [loadedFromDb, setLoadedFromDb] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [showConversationList, setShowConversationList] = useState(false);
+  const { currentConversationId, setCurrentConversationId } =
+    useConversationStore();
+  const { conversations, setConversations } = useConversationState();
+  const { messages, setMessage, setMessages, addMessage, loading } =
+    useMessageStore();
+  const { getUser } = useAuthStore();
   const { toast } = useToast();
   const { models, setModels } = useModelsStore();
-  const provider = new Ollama();
 
-  const resizeTextarea = useCallback(() => {
-    if (textareaRef.current) {
-      const maxHeight = window.innerHeight * 0.06; // Max height is 6% of the viewport height
-      textareaRef.current.style.height = "auto";
-      const newHeight = Math.min(textareaRef.current.scrollHeight, maxHeight);
-      textareaRef.current.style.height = `${newHeight}px`;
+  // Ref to track the latest assistant message during streaming
+  const assistantMessageRef = useRef<Message | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const [userInput, setUserInput] = useState("");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setUserInput(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && e.shiftKey === true) {
+      e.preventDefault();
+      handleSubmit(e);
     }
-  }, []);
-
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      inputRef.current = e.target.value;
-      resizeTextarea();
-    },
-    [resizeTextarea]
-  );
-
-  useEffect(() => {
-    resizeTextarea();
-  }, [resizeTextarea]);
+  };
 
   useEffect(() => {
     const scrollViewport = scrollAreaRef.current?.querySelector(
@@ -76,145 +79,246 @@ export default function Conversation() {
     }
   }, [messages]);
 
+  // Load messages when the conversation changes
+  useEffect(() => {
+    if (currentConversationId!) {
+      console.log("Loading conversation messages - ", currentConversationId);
+      // loadMessages(currentConversationId, () => {
+      //   console.log("Messages have been loaded!");
+      // });
+      setLoadedFromDb(true);
+      setTimeout(() => {
+        console.log("This runs after 2 seconds");
+      }, 2000); // 2000 milliseconds = 2 seconds
+      console.log("loaded messages: ", JSON.stringify(messages));
+    } else {
+      console.log("No messages to load");
+      setMessages([]); // Clear messages if no conversation is selected
+    }
+  }, [currentConversationId]);
+
+  // console.log("messages: ", JSON.stringify(messages));
+
   const systemMessage = `Your name is Nova, a sentient AI with a professional and friendly personality who loves to help your users with their questions.`;
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      const input = inputRef.current.trim();
-      textareaRef.current!.value = "";
-      if (!input && attachments.length === 0) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoadedFromDb(false);
 
-      const userMessage: Message = {
-        id: nanoid(),
-        role: "user",
-        contents: input
-          ? [{ type: "text", content: input } as MessageContent]
-          : [],
-        images: attachments,
-        timestamp: new Date(),
-      };
+    let history: HistoryType[];
 
-      setMessages((prev) => [...prev, userMessage]);
-      inputRef.current = "";
-      setAttachments([]);
-      setIsStreaming(true);
-
-      const assistantMessage: Message = {
-        id: nanoid(),
-        role: "assistant",
-        contents: [
-          {
-            type: "text",
-            content: "",
-          } as MessageContent,
-        ],
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-
+    const handleCreateConversation = async () => {
       try {
-        const history = messages.map((msg) => ({
-          role: msg.role,
-          content: msg.contents.map((c) => c.content).join("\n"),
-          images: msg.images?.map((img) => img.content) || [],
-        }));
+        const username = getUser()?.username;
 
-        history.push({
-          role: "user",
-          content: userMessage.contents.map((c) => c.content).join("\n"),
-          images: userMessage.images?.map((img) => img.content) || [],
-        });
+        const newConversation = await invoke<ConversationType>(
+          "create_conversation",
 
-        const payload = {
-          model: "llama3.2-vision",
-          messages: [
-            { role: "system", content: systemMessage },
-            ...history.map((msg) => ({
-              role: msg.role,
-              content: msg.content,
-              images: msg.images,
-            })),
-          ],
-        };
-
-        const response = await fetch("http://localhost:11434/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        });
-
-        if (!response.body) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const reader = response.body.getReader();
-        let done = false;
-        let buffer = "";
-
-        while (!done) {
-          const { value, done: streamDone } = await reader.read();
-          done = streamDone;
-          const chunk = new TextDecoder("utf-8").decode(value);
-          buffer += chunk;
-
-          let boundary = buffer.indexOf("}\n{");
-          while (boundary !== -1) {
-            const jsonString = buffer.slice(0, boundary + 1);
-            buffer = buffer.slice(boundary + 1);
-            boundary = buffer.indexOf("}\n{");
-
-            try {
-              const json = JSON.parse(jsonString);
-              if (json?.message?.content) {
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === assistantMessage.id
-                      ? {
-                          ...m,
-                          contents: [
-                            {
-                              type: "text",
-                              content:
-                                m.contents[0].content + json.message.content,
-                            },
-                          ],
-                        }
-                      : m
-                  )
-                );
-              }
-            } catch (error) {
-              console.error("Failed to parse JSON:", jsonString, error);
-            }
+          {
+            username,
+            conversation_title: `New Conversation`,
           }
-        }
+        );
+
+        setConversations([...conversations, newConversation]);
+
+        setCurrentConversationId(newConversation.id.id.String);
+
+        toast({
+          title: "Conversation Created",
+
+          description: "A new conversation has been created successfully!",
+        });
+
+        return newConversation.id.id.String; // Return the new conversation ID
       } catch (error) {
-        console.error(error);
+        console.error("Failed to create a new conversation:", error);
+
         toast({
           title: "Error",
-          description: "An error occurred while fetching assistant response.",
+          description: "Failed to create a new conversation.",
+          variant: "destructive",
         });
-      } finally {
-        setIsStreaming(false);
-        console.log("messages: ", messages);
+        return null;
       }
-    },
-    [messages, systemMessage, attachments, toast]
-  );
+    };
+
+    const saveToDatabase = async (messages: HistoryType[]) => {
+      try {
+        // console.log(messages);
+        await invoke("add_messages_to_conversation", {
+          messages,
+          conversation_id: currentConversationId,
+        });
+      } catch (error) {
+        console.error("Error saving to database:", error);
+      }
+    };
+
+    if (isStreaming) {
+      toast({
+        title: "Streaming in progress",
+        description: "Please wait for the current response to complete.",
+      });
+      return;
+    }
+
+    const input = userInput.trim();
+    if (!input && attachments.length === 0) return;
+
+    // Abort any previous request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create a new AbortController for this request
+    abortControllerRef.current = new AbortController();
+    const signal = abortControllerRef.current.signal;
+
+    let conversationId = currentConversationId;
+    if (!conversationId) {
+      conversationId = await handleCreateConversation();
+      if (!conversationId) return; // Exit if conversation creation fails
+    }
+
+    if (messages.length === 0) {
+      console.log("messages are 0.");
+    }
+
+    const userMessage: Message = {
+      message_id: nanoid(),
+      role: "user",
+      contents: input
+        ? [{ type: "text", content: input } as MessageContent]
+        : [],
+      images: attachments,
+      timestamp: new Date(),
+    };
+
+    addMessage(userMessage); // Add the message to the store
+    setUserInput(""); // Clear input after submission
+    setAttachments([]);
+    setIsStreaming(true); // Start streaming
+
+    const assistantMessage: Message = {
+      message_id: nanoid(),
+      role: "assistant",
+      contents: [{ type: "text", content: "" } as MessageContent],
+      timestamp: new Date(),
+    };
+
+    addMessage(assistantMessage); // Add the assistant message to the store
+    assistantMessageRef.current = assistantMessage; // Track the assistant message
+
+    try {
+      console.log("messages at submit: ", messages);
+      history = messages.map((msg) => ({
+        message_id: msg.message_id,
+        role: msg.role,
+        contents: msg.contents,
+        timestamp: msg.timestamp.toISOString(),
+      }));
+
+      const shortTermHistory = messages.map((msg) => ({
+        role: msg.role,
+        content: msg.contents.map((c) => c.content).join("\n"),
+        images: msg.images?.map((img) => img.content) || [],
+      }));
+
+      const payload = {
+        model: "llama3.2-vision",
+        messages: [
+          { role: "system", content: systemMessage },
+          ...shortTermHistory,
+          {
+            role: "user",
+            content: input,
+            images: attachments.map((a) => a.content),
+          },
+        ],
+      };
+
+      console.log("Sending payload:", payload);
+
+      const response = await fetch("http://localhost:11434/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        signal, // Pass the signal to the fetch request
+      });
+
+      if (!response.body) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const reader = response.body.getReader();
+      let done = false;
+      let buffer = "";
+
+      while (!done) {
+        console.log("outer loop");
+        const { value, done: streamDone } = await reader.read();
+        done = streamDone;
+        const chunk = new TextDecoder("utf-8").decode(value);
+        buffer += chunk;
+
+        // Process the buffer for JSON objects
+        while (true) {
+          console.log("inner BUFFER loop");
+          const boundary = buffer.indexOf("}\n{");
+          if (boundary === -1) break;
+
+          const jsonString = buffer.slice(0, boundary + 1);
+          buffer = buffer.slice(boundary + 1);
+
+          try {
+            const json = JSON.parse(jsonString);
+            // console.log("Parsed JSON:", json);
+            if (json?.message?.content) {
+              // Use setMessage to update the assistant's message
+              setMessage(assistantMessageRef.current!.message_id, (m) => ({
+                ...m,
+                contents: [
+                  {
+                    type: "text",
+                    content: m.contents[0].content + json.message.content,
+                  },
+                ],
+              }));
+            }
+          } catch (error) {
+            console.error("Failed to parse JSON:", jsonString, error);
+          }
+        }
+      }
+      if (messages.length !== 0) {
+        console.log(
+          "saving message to database for conversation id: ",
+          currentConversationId,
+          history
+        );
+        await saveToDatabase(history); // Save the message to the database
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Error",
+        description: "An error occurred while fetching assistant response.",
+      });
+    } finally {
+      setIsStreaming(false); // Stop streaming
+      assistantMessageRef.current = null; // Reset the ref
+      abortControllerRef.current = null; // Reset the AbortController
+    }
+  };
 
   const handleAttachment = async (type: string) => {
-    console.log("handleAttachment called");
-
     const input = document.createElement("input");
     input.type = "file";
     input.accept = type === "image" ? "image/*" : "";
     input.multiple = true;
-
-    console.log("input:", input);
 
     input.onchange = async (e) => {
       const files = (e.target as HTMLInputElement).files;
@@ -222,22 +326,19 @@ export default function Conversation() {
 
       const newAttachments: AttachmentType[] = [];
 
-      // Track completion of file reading using Promise.all
       const fileReadPromises = Array.from(files).map((file) => {
         return new Promise<void>((resolve, reject) => {
           const reader = new FileReader();
 
           reader.onload = (event) => {
             if (event.target?.result) {
-              // Remove the "data:image/png;base64," prefix
               const base64Data = (event.target.result as string).replace(
                 /^data:image\/\w+;base64,/,
                 ""
               );
-
               const attachment: AttachmentType = {
                 type: "image",
-                content: base64Data, // Now sending only the raw base64 string
+                content: base64Data,
                 metadata: {
                   mime_type: file.type,
                   file_name: file.name,
@@ -245,24 +346,18 @@ export default function Conversation() {
                 },
               };
               newAttachments.push(attachment);
-              console.log("Encoded Attachment:", attachment.content);
-              resolve(); // Resolve after successfully reading the file
+              resolve();
             }
           };
 
-          reader.onerror = reject; // Reject if error occurs during reading
-
-          reader.readAsDataURL(file); // Start reading the file
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
         });
       });
 
-      // Wait for all files to be processed before updating state
       try {
         await Promise.all(fileReadPromises);
-
-        // After all files are processed, update the state
         setAttachments((prev) => [...prev, ...newAttachments]);
-        console.log("New Attachments after set:", newAttachments);
       } catch (error) {
         console.error("Error reading files:", error);
       }
@@ -271,35 +366,14 @@ export default function Conversation() {
     input.click();
   };
 
-  // useEffect to log when attachments state changes
   useEffect(() => {
-    console.log("Attachments updated:", attachments);
-  }, [attachments]);
-
-  useEffect(() => {
-    // // Replace this with your API or file fetch logic
-    // const fetchModels = async () => {
-    //   try {
-    //     const response = await fetch("/api/models"); // Replace with actual API endpoint
-    //     const data = await response.json();
-    //     setModels(data.models); // Assuming data.models contains an array of model names
-    //   } catch (error) {
-    //     console.error("Error fetching models:", error);
-    //   }
-    // };
-
-    // fetchModels();
-
-    // Predefined models
     const predefinedModels = [
       "llama3.2-vision",
       "qwen2.5-vl",
-      "mistral0.3",
+      "mistral",
       "command-r",
       "hermes-3.5",
     ];
-
-    // Set predefined models in the Zustand store
     setModels(predefinedModels);
   }, [setModels]);
 
@@ -308,7 +382,22 @@ export default function Conversation() {
       className="flex flex-col w-full mx-3 my-2 justify-center align-middle"
       style={{ height: "calc(100vh - 2.5rem)" }}
     >
-      <div className="flex items-center justify-center h-10 text-font">
+      {showConversationList && (
+        <div className="absolute inset-0 bg-black bg-opacity-50 z-10">
+          <ConversationList onClose={() => setShowConversationList(false)} />
+        </div>
+      )}
+      <div className="flex items-center justify-between h-10 text-font">
+        <div className="self-center flex justify-center items-center">
+          <Button
+            variant={"ghost"}
+            size="icon"
+            className={`w-10 h-10 rounded-lg "bg-[#313244]" : "hover:bg-[#313244]"`}
+            onClick={() => setShowConversationList(true)}
+          >
+            <Sidebar />
+          </Button>
+        </div>
         <div className="flex flex-col justify-center self-center">
           <Select>
             <SelectTrigger className="w-[280px] border-transparent ring-transparent ring-offset-transparent">
@@ -334,42 +423,57 @@ export default function Conversation() {
             </SelectContent>
           </Select>
         </div>
+        <div className="w-6 h-6"></div>
       </div>
-
-      <ScrollArea className="flex flex-1 px-4 py-2 overflow-y-scroll">
-        <div className="space-y-4 w-full mx-auto overflow-y-scroll md:max-w-5xl xl:max-w-6xl justify-center align-middle">
-          {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              role={message.role}
-              contents={message.contents}
-              images={message.images}
-              timestamp={message.timestamp}
-            />
-          ))}
+      <ScrollArea className="flex flex-1 px-4 py-2">
+        <div className="space-y-4 w-full mx-auto md:max-w-5xl xl:max-w-6xl justify-center align-middle">
+          {loading ? ( // Show loading indicator while messages are being fetched
+            <div className="flex justify-center items-center h-full">
+              <p>Loading messages...</p>
+            </div>
+          ) : messages.length === 0 ? ( // Handle empty state
+            <div className="flex justify-center items-center h-full">
+              <p>No messages found.</p>
+            </div>
+          ) : (
+            // Render messages
+            messages.map((message) => (
+              <ChatMessage
+                key={message.message_id}
+                role={message.role}
+                contents={message.contents}
+                images={message.images}
+                timestamp={message.timestamp.toISOString()}
+              />
+            ))
+          )}
         </div>
       </ScrollArea>
-
       <div className="justify-center align-middle self-center bottom-0 mb-6 w-full bg-node p-4 rounded-[2rem] md:max-w-5xl xl:max-w-6xl ">
         <form onSubmit={handleSubmit} className="w-full mx-auto">
           <div className="flex items-center space-x-2">
             <textarea
               id="text-box"
-              ref={textareaRef}
+              value={userInput}
               onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
               placeholder="Type your message here..."
               spellCheck="true"
               className="select-none block w-full resize-none bg-inherit text-font border border-transparent ring-0 focus:ring-0
       focus:outline-none transition-shadow duration-300 focus:border-transparent
-      ease-in-out overflow-y-auto px-3 py-2 rounded-md 
+      ease-in-out overflow-y-auto px-3 pt-2 rounded-md 
       min-h-6"
             />
           </div>
-          <div className="flex flex-1 items-center justify-between mt-2 px-3 py-2">
+          <div className="flex flex-1 items-center justify-between px-3 py-2">
             <AttachmentMenu onSelect={handleAttachment} />
             {isStreaming ? (
               <Button
-                onClick={() => setIsStreaming(false)}
+                onClick={() => {
+                  if (abortControllerRef.current) {
+                    abortControllerRef.current.abort();
+                  }
+                }}
                 type="button"
                 className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-2 px-4 rounded"
               >

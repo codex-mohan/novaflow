@@ -49,8 +49,10 @@ pub fn run() {
             commands::login_user,
             commands::create_conversation,
             commands::load_conversations,
-            commands::add_message_to_conversation,
+            commands::add_messages_to_conversation,
+            commands::get_messages_from_conversation,
             commands::update_conversation_db,
+            commands::delete_conversation,
         ])
         // Use the setup hook to execute setup related tasks
         // Runs before the main loop, so no windows are yet created

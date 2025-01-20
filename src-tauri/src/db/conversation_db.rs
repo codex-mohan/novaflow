@@ -1,13 +1,37 @@
 use crate::db::db::Database;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use surrealdb::Result;
-use tracing::info;
+use std::borrow::Cow;
+use surrealdb::{error::Db, sql::Datetime, RecordId, Result, Surreal};
+use tracing::{error, info};
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Record {
+    #[allow(dead_code)]
+    pub id: RecordId,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Conversation {
-    pub id: String,
-    pub user_id: String,
+    id: RecordId,
+    pub user_id: RecordId,
+    pub title: String,
+    pub messages: Vec<Message>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ConversationData {
+    user_id: RecordId,
+    messages: Vec<Message>,
+    title: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ConversationInfo {
+    id: RecordId,
+    pub user_id: RecordId,
     pub title: String,
     pub created_at: String,
     pub updated_at: String,
@@ -15,11 +39,22 @@ pub struct Conversation {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Message {
-    pub id: String,
-    pub conversation_id: String,
-    pub role: String,   // "user" | "assistant"
-    pub content: Value, // JSON payload
+    pub message_id: String,
+    pub role: String,
+    pub contents: Value, // JSON payload
     pub timestamp: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Messages {
+    messages: Vec<Message>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct MessageData<'a> {
+    pub message_id: Cow<'a, str>,
+    pub content: Value, // JSON payload
+    pub images: Vec<String>,
 }
 
 pub struct ConversationDatabase;
@@ -33,92 +68,164 @@ impl ConversationDatabase {
         let conn = db.lock().await;
 
         // Define the conversation table
-        conn.query("DEFINE TABLE conversation SCHEMAFUL;").await?;
-        conn.query("DEFINE FIELD user_id ON conversation TYPE record<user>;")
-            .await?;
-        conn.query("DEFINE FIELD title ON conversation TYPE string ASSERT $value != NONE AND $value != '';" ).await?;
-        conn.query("DEFINE INDEX idx_title ON conversation FIELDS title UNIQUE;")
-            .await?;
-        conn.query("DEFINE FIELD created_at ON conversation TYPE datetime;")
-            .await?;
-        conn.query("DEFINE FIELD updated_at ON conversation TYPE datetime;")
-            .await?;
+        conn.query(
+            r#"
+            DEFINE TABLE conversation SCHEMAFUL;
+            DEFINE FIELD user_id ON conversation TYPE record<user>;
+            DEFINE FIELD title ON conversation TYPE string ASSERT $value != NONE AND $value != '';
+            DEFINE FIELD messages ON conversation FLEXIBLE TYPE option<array<object>>;
+            DEFINE FIELD created_at ON conversation VALUE time::now();
+            DEFINE FIELD updated_at ON conversation VALUE time::now();
+            "#,
+        )
+        .await?;
 
-        // Define the message table
-        conn.query("DEFINE TABLE message SCHEMAFUL;").await?;
-        conn.query("DEFINE FIELD conversation_id ON message TYPE record<conversation>;")
-            .await?;
-        conn.query("DEFINE FIELD role ON message TYPE string;")
-            .await?;
-        conn.query("DEFINE FIELD content ON message TYPE object;")
-            .await?; // JSON content
-        conn.query("DEFINE FIELD timestamp ON message TYPE datetime;")
-            .await?;
-
-        info!("Schema definitions for `conversation` and `message` are set up.");
+        info!("Schema definitions for `conversation` and `messages` are set up.");
         Ok(())
     }
 
-    /// Create a new conversation and return its ID
-    pub async fn create_conversation(user_id: String, title: String) -> Result<String> {
+    pub async fn create_conversation<'a>(
+        user_id: impl Into<Cow<'a, str>>,
+        title: impl Into<Cow<'a, str>>,
+    ) -> Result<Conversation> {
         let db = Database::get_connection();
         let conn = db.lock().await;
 
-        let mut result = conn
-            .query("CREATE conversation SET user_id = $user_id, title = $title, created_at = time::now(), updated_at = time::now();")
-            .bind(("user_id", format!("user:{}", user_id)))
-            .bind(("title", title))
+        // Convert `user_id` and `title` to `Cow<'a, str>`
+        let user_id = user_id.into();
+        let title = title.into();
+
+        info!("creating and fetching the result...");
+        // Execute the query to create the conversation
+        let conversation: Option<Conversation> = conn
+            .create("conversation")
+            .content(ConversationData {
+                user_id: RecordId::from_table_key("user", &*user_id),
+                messages: vec![],
+                title: title.to_string(), // Convert `Cow` to `String` as required by the struct
+            })
             .await?;
 
-        let conversation: Option<Conversation> = result.take(0)?;
-        Ok(conversation.unwrap().id)
+        // Retrieve the conversation
+        dbg!(conversation.as_ref());
+
+        // Return the created conversation
+        Ok(conversation.unwrap())
     }
 
-    /// Add a message to a conversation
-    pub async fn add_message(
-        conversation_id: &str,
-        role: String,
-        content: Value,
+    pub async fn add_message_to_coversation(
+        conversation_id: String,
+        messages: Vec<Message>,
     ) -> Result<String> {
         let db = Database::get_connection();
         let conn = db.lock().await;
 
-        let mut result = conn
-            .query("CREATE message SET conversation_id = $conversation_id, role = $role, content = $content, timestamp = time::now();")
-            .bind(("conversation_id", format!("conversation:{}", conversation_id)))
-            .bind(("role", role))
-            .bind(("content", content))
+        info!("Adding message to conversation: {}", &conversation_id);
+
+        let conversation_id_rec = RecordId::from_table_key("conversation", &conversation_id);
+
+        #[derive(Debug, Serialize, Deserialize)]
+        struct UserId {
+            user_id: RecordId,
+            title: String,
+        };
+
+        let data: Option<UserId> = conn.select(("conversation", &conversation_id)).await?;
+
+        let title = data.as_ref().unwrap().title.clone();
+        let user_id = data.as_ref().unwrap().user_id.clone();
+
+        let message: Option<ConversationData> = conn
+            .upsert((
+                conversation_id_rec.table().to_string(),
+                conversation_id_rec.key().to_string(),
+            ))
+            .content(ConversationData {
+                user_id: user_id,
+                messages: messages,
+                title: title,
+            })
             .await?;
 
-        let message: Option<Message> = result.take(0)?;
-        Ok(message.unwrap().id)
+        Ok(message.unwrap().title.to_string())
     }
 
     /// Retrieve all messages for a given conversation ID
-    pub async fn get_conversation_messages(conversation_id: &str) -> Result<Vec<Message>> {
+    pub async fn get_conversation_messages(conversation_id: &str) -> Result<Vec<Messages>> {
         let db = Database::get_connection();
         let conn = db.lock().await;
 
+        info!(
+            "Loading comversations messages for Conversation ID: {}",
+            conversation_id
+        );
+
         let mut result = conn
-            .query("SELECT * FROM message WHERE conversation_id = $conversation_id ORDER BY timestamp ASC;")
-            .bind(("conversation_id", format!("conversation:{}", conversation_id)))
+            .query("SELECT messages FROM $conversation_id;")
+            .bind((
+                "conversation_id",
+                RecordId::from_table_key("conversation", conversation_id),
+            ))
             .await?;
 
-        let messages: Vec<Message> = result.take(0)?;
+        dbg!(&result);
+        let messages: Vec<Messages> = result.take(0)?;
+
+        info!("{:?}", &messages);
+
         Ok(messages)
     }
 
     /// Retrieve all conversations for a given user ID
-    pub async fn get_user_conversations(user_id: &str) -> Result<Vec<Conversation>> {
+    pub async fn get_user_conversations(user_id: RecordId) -> Result<Vec<Conversation>> {
         let db = Database::get_connection();
         let conn = db.lock().await;
 
+        info!("getting user conversations for {}", user_id);
+
         let mut result = conn
             .query("SELECT * FROM conversation WHERE user_id = $user_id ORDER BY created_at ASC;")
-            .bind(("user_id", format!("user:{}", user_id)))
+            .bind(("user_id", user_id))
             .await?;
 
         let conversations: Vec<Conversation> = result.take(0)?;
+
+        dbg!(&conversations);
+
         Ok(conversations)
+    }
+
+    // Delete both conversation and it associated messages. Pass only the table id (key)
+    pub async fn delete_conversation(conversation_id: &str) -> Result<Record> {
+        let db = Database::get_connection();
+        let conn = db.lock().await;
+
+        let conversation_id_rec = RecordId::from_table_key("messages", conversation_id);
+
+        // Delete both the conversation and it associated messages.
+        let mut result_msg = conn
+            .query("DELETE messages WHERE conversation_id = $conversation_id;")
+            .bind(("conversation_id", conversation_id_rec))
+            .await?;
+
+        let msg: Option<Record> = result_msg.take(0)?;
+
+        // Now delete the conversation
+
+        let result_conversation: Option<Record> =
+            conn.delete(("conversation", conversation_id)).await?;
+
+        dbg!(result_conversation.as_ref());
+
+        match result_conversation {
+            Some(val) => {
+                info!("The conversation {} has been deleted.", val.id);
+                return Ok(val);
+            }
+            None => {
+                info!("The mentioned record doesn't exist.");
+                return Err(surrealdb::Error::Db(Db::NoRecordFound));
+            }
+        }
     }
 }

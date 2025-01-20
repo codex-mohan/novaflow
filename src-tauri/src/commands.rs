@@ -1,10 +1,14 @@
 use crate::utils::get_database_path;
 use serde_json::{json, Value};
+use std::sync::LazyLock;
 use tauri::{command, AppHandle, Emitter, EventTarget};
 use tracing::{error, info};
 
-use crate::db::conversation_db::{Conversation, ConversationDatabase};
+use crate::db::conversation_db::{Conversation, ConversationDatabase, Message, Messages, Record};
 use crate::db::user_db::UserDatabase;
+
+static DB_PATH: LazyLock<String> =
+    std::sync::LazyLock::new(|| get_database_path("db").display().to_string());
 
 #[command]
 pub fn open_file(app: AppHandle, path: std::path::PathBuf) {
@@ -24,9 +28,8 @@ pub async fn signup_user(
     email: String,
 ) -> Result<(), String> {
     info!("Signing up user...");
-    let database_path = get_database_path("db").display().to_string();
     // Ensure the database is initialized
-    if let Err(e) = UserDatabase::initialize(&database_path).await {
+    if let Err(e) = UserDatabase::initialize(&*DB_PATH).await {
         error!("Failed to initialize database: {:?}", e);
         return Err(format!("Database initialization failed: {:?}", e));
     }
@@ -64,8 +67,7 @@ pub async fn login_user(username: String, password: String) -> Result<serde_json
     info!("Logging in user...");
 
     // Ensure the database is initialized
-    let database_path = get_database_path("db").display().to_string();
-    if let Err(e) = UserDatabase::initialize(&database_path).await {
+    if let Err(e) = UserDatabase::initialize(&*DB_PATH).await {
         error!("Failed to initialize database: {:?}", e);
         return Err(format!("Database initialization failed: {:?}", e));
     }
@@ -101,12 +103,54 @@ pub async fn login_user(username: String, password: String) -> Result<serde_json
 }
 
 #[command(rename_all = "snake_case")]
+pub async fn create_conversation(
+    username: String,
+    conversation_title: String,
+) -> Result<Conversation, String> {
+    // Clone the `username` to create an owned String
+    let username_owned = username.to_string();
+
+    if let Err(e) = UserDatabase::initialize(&*DB_PATH).await {
+        error!("Failed to initialize database: {:?}", e);
+        return Err(format!("Database initialization failed: {:?}", e));
+    }
+
+    if let Err(e) = ConversationDatabase::initialize(&*DB_PATH).await {
+        return Err(format!("Database initialization failed: {:?}", e));
+    }
+
+    // Spawn an asynchronous task for getting user ID
+    let result = UserDatabase::get_user_id(&username_owned).await;
+
+    let user_id = result.map_err(|e| format!("Failed to get user ID: {:?}", e))?;
+
+    if user_id.id.key().to_string().is_empty() {
+        info!("Got empty user id")
+    }
+
+    // Use default title if conversation_title is empty
+    let title = if conversation_title.is_empty() {
+        "default_conversation".to_string()
+    } else {
+        conversation_title
+    };
+
+    let conversation =
+        ConversationDatabase::create_conversation(user_id.id.key().to_string(), title.to_string())
+            .await;
+
+    match conversation {
+        Ok(data) => Ok(data),
+        Err(e) => Err(format!("Got error {}", e)),
+    }
+}
+
+#[command(rename_all = "snake_case")]
 pub async fn update_conversation_db() -> Result<(), String> {
     info!("Updating conversation database...");
-    let database_path = get_database_path("db").display().to_string();
 
     // Ensure the database is initialized
-    if let Err(e) = ConversationDatabase::initialize(&database_path).await {
+    if let Err(e) = ConversationDatabase::initialize(&*DB_PATH).await {
         error!("Failed to initialize database: {:?}", e);
         return Err(format!("Database initialization failed: {:?}", e));
     }
@@ -115,26 +159,16 @@ pub async fn update_conversation_db() -> Result<(), String> {
 }
 
 #[command(rename_all = "snake_case")]
-pub async fn create_conversation(user_id: String) -> Result<String, String> {
-    let database_path = get_database_path("db").display().to_string();
-    if let Err(e) = ConversationDatabase::initialize(&database_path).await {
-        return Err(format!("Database initialization failed: {:?}", e));
-    }
-    let title = "default_conversation"; // Use default title
-    let conversation_id = ConversationDatabase::create_conversation(user_id, title.to_string())
-        .await
-        .map_err(|e| format!("{:?}", e))?;
-    Ok(conversation_id)
-}
-
-#[command(rename_all = "snake_case")]
-pub async fn load_conversations(user_id: String) -> Result<Vec<Conversation>, String> {
-    let database_path = get_database_path("db").display().to_string();
-    if let Err(e) = ConversationDatabase::initialize(&database_path).await {
+pub async fn load_conversations(username: String) -> Result<Vec<Conversation>, String> {
+    if let Err(e) = ConversationDatabase::initialize(&*DB_PATH).await {
         return Err(format!("Database initialization failed: {:?}", e));
     }
 
-    let conversations = match ConversationDatabase::get_user_conversations(&user_id).await {
+    let result = UserDatabase::get_user_id(&username).await;
+
+    let user_id = result.map_err(|e| format!("Failed to get user ID: {:?}", e))?;
+
+    let conversations = match ConversationDatabase::get_user_conversations(user_id.id).await {
         Ok(conversations) => conversations,
         Err(e) => return Err(format!("Failed to get user conversations: {:?}", e)),
     };
@@ -142,27 +176,78 @@ pub async fn load_conversations(user_id: String) -> Result<Vec<Conversation>, St
 }
 
 #[command(rename_all = "snake_case")]
-pub async fn add_message_to_conversation(
-    user: String, // Access the current user's data
+pub async fn add_messages_to_conversation(
     conversation_id: String,
-    role: String,
-    content: Value, // Assuming content is in JSON format
+    messages: Vec<Message>, // Assuming content is in JSON format
 ) -> Result<String, String> {
-    // Check if the user exists (optional, but ensures you handle state properly)
-    if user.is_empty() {
-        return Err("User ID is missing".into());
+    // Initializing the conversation_db
+    if let Err(e) = ConversationDatabase::initialize(&*DB_PATH).await {
+        error!("Failed to initialize database: {:?}", e);
+        return Err(format!("Database initialization failed: {:?}", e));
     }
 
     // Add the message to the conversation
-    let message_id = match ConversationDatabase::add_message(&conversation_id, role, content).await
-    {
-        Ok(message) => message,
-        Err(e) => {
-            return Err(format!(
-                "Failed to add message to conversation - {}: {:?}",
-                conversation_id, e
-            ))
-        }
-    };
+    let message_id =
+        match ConversationDatabase::add_message_to_coversation(conversation_id.clone(), messages)
+            .await
+        {
+            Ok(message) => message,
+            Err(e) => {
+                return Err(format!(
+                    "Failed to add message to conversation - {}: {:?}",
+                    conversation_id.to_string(),
+                    e
+                ))
+            }
+        };
     Ok(message_id)
+}
+
+#[command(rename_all = "snake_case")]
+pub async fn get_messages_from_conversation(
+    conversation_id: String,
+) -> Result<Vec<Messages>, String> {
+    // Initializing the conversation_db
+    if let Err(e) = ConversationDatabase::initialize(&*DB_PATH).await {
+        error!("Failed to initialize database: {:?}", e);
+        return Err(format!("Database initialization failed: {:?}", e));
+    }
+
+    let joint_result = tauri::async_runtime::spawn(async move {
+        ConversationDatabase::get_conversation_messages(conversation_id.as_str()).await
+    });
+
+    match joint_result.await {
+        Ok(result) => match result {
+            Ok(messages) => Ok(messages),
+            Err(e) => Err(format!("Failed getting messages {}", e)),
+        },
+        Err(e) => Err(format!(
+            "Job for get_messages_from_conversations failed with error: {}",
+            e
+        )),
+    }
+}
+
+#[command(rename_all = "snake_case")]
+pub async fn delete_conversation(conversation_id: String) -> Result<Record, String> {
+    if let Err(e) = ConversationDatabase::initialize(&*DB_PATH).await {
+        error!("Failed to initialize database: {:?}", e);
+        return Err(format!("Database initialization failed: {:?}", e));
+    }
+
+    let joint_result = tauri::async_runtime::spawn(async move {
+        ConversationDatabase::delete_conversation(&conversation_id).await
+    });
+
+    match joint_result.await {
+        Ok(conversation) => match conversation {
+            Ok(value) => Ok(value),
+            Err(e) => Err(format!("Failed deleting messages: {}", e)),
+        },
+        Err(e) => Err(format!(
+            "Job for get_messages_from_conversations failed with error: {}",
+            e
+        )),
+    }
 }

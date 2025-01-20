@@ -18,13 +18,11 @@ import { UserMenu } from "@/components/menus/UserMenu";
 import { useAuthStore } from "@/store/auth-store";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { Position } from "@xyflow/react";
 import ConversationList from "@/components/views/ConversationList"; // Import the ConversationList component
 
 const Dashboard = () => {
   const [activeView, setActiveView] = useState("conversation");
   // const [showConversationList, setShowConversationList] = useState(false); // New state for conversation list visibility
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { toast } = useToast();
 

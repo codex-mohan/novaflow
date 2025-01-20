@@ -72,6 +72,7 @@ const config: Config = {
         base: "#181826",
         "base-hover": "#2f2f4b",
         "base-secondary": "#1E1E2E",
+        menu: "#484873",
         primary: "#8a05be",
         secondary: "#ff0687",
         tertiary: "#EF4444",

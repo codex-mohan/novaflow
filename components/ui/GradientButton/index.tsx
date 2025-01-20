@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 interface GradientButtonProps {
   children: React.ReactNode;
   className?: string;
+  glowClass?: string;
   width?: number | "full" | string; // Accepts width as number or 'full' (full-width)
   height?: number | "full" | string; // Accepts height as number or 'full' (full-height)
   type?: "button" | "reset" | "submit"; // Button type prop
@@ -19,6 +20,7 @@ interface GradientButtonProps {
 const GradientButton: React.FC<GradientButtonProps> = ({
   children,
   className = "",
+  glowClass = "",
   height = "12", // Default height (can be overwritten by number or 'full')
   width = "48", // Default width (can be overwritten by number or 'full')
   color,
@@ -40,9 +42,9 @@ const GradientButton: React.FC<GradientButtonProps> = ({
     <div className={cn("relative group", className)}>
       <div
         className={cn(
-          "-z-2 absolute -inset-2 rounded-md opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-75 blur-2xl will-change-transform",
+          "-z-2 absolute -inset-2 opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-75 blur-2xl will-change-transform",
           gradientClass,
-          className
+          glowClass
         )}
       ></div>
       <button

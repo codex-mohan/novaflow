@@ -12,7 +12,6 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::Command;
 use sysinfo::System;
-use sysinfo::{CpuRefreshKind, RefreshKind};
 use tauri::{AppHandle, Emitter};
 use tokio::time::sleep;
 
@@ -60,7 +59,7 @@ pub async fn get_base64_image(input: ImageInput<'_>) -> Result<String, Box<dyn E
 }
 
 #[derive(serde::Serialize, Deserialize, Clone)]
-struct statsPayload {
+pub struct StatsPayload {
     cpu: f32,
     ram: f32,
     vram: f32,
@@ -105,12 +104,9 @@ fn get_gpu_stats() -> (f32, f32) {
     (gpu_usage, vram_usage)
 }
 
-pub fn get_system_stats() -> statsPayload {
+pub fn get_system_stats() -> StatsPayload {
     let mut sys = System::new_all();
     sys.refresh_all();
-
-    let mut s =
-        System::new_with_specifics(RefreshKind::new().with_cpu(CpuRefreshKind::everything()));
 
     // Wait a bit because CPU usage is based on diff.
     std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
@@ -129,10 +125,10 @@ pub fn get_system_stats() -> statsPayload {
     // GPU Info (example using nvidia-smi, you'll need to add nvidia-smi crate)
     // GPU Usage
 
-    let (gpu_usage, vram_usage) = get_gpu_stats();
-    info!("Vram Usage: {}", vram_usage);
+    let (_gpu_usage, vram_usage) = get_gpu_stats();
+    // info!("Vram Usage: {}", vram_usage);
 
-    statsPayload {
+    StatsPayload {
         cpu: cpu_usage,
         ram: memory_usage,
         vram: vram_usage,

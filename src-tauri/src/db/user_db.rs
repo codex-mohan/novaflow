@@ -1,14 +1,16 @@
 use crate::db::db::Database;
+use serde::de::IntoDeserializer;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use surrealdb::Result as SurrealResult;
+use surrealdb::{Error, Result as SurrealResult};
+use surrealdb::{sql::Value};
 use tracing::{error, info};
 
 use surrealdb::RecordId;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Record {
-    id: RecordId,
+    pub id: RecordId,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -95,15 +97,31 @@ impl UserDatabase {
     pub async fn get_user_by_username(username: &str) -> SurrealResult<Option<User>> {
         let db = Database::get_connection();
         let conn = db.lock().await;
-
-        let query = "SELECT * FROM user WHERE username = $username";
-        let vars = json!({ "username": username });
-
-        let mut result = conn.query(query).bind(vars).await?;
-        let user: Option<User> = result.take(0)?;
+        let user: Option<User> = conn.select(("user", username)).await?;
 
         Ok(user)
     }
+
+    pub async fn get_user_id(username: &str) -> SurrealResult<Record>{
+        let db = Database::get_connection();
+        let conn = db.lock().await;
+        
+        dbg!(format!("getting username: {}", username));
+
+        let mut result = conn.query("SELECT * FROM user WHERE username = $username").bind(("username",username.to_owned())).await?;
+        
+        let id: Option<Record> = result.take(0)?;
+
+        // dbg!(id.as_ref());
+        // dbg!(id.as_ref().unwrap().id.key());
+
+        match id {
+             Some(value) => Ok(value),
+             None => {info!("got no user"); Err(Error::Api(surrealdb::error::Api::Query("Failed to get user ID".into())))}
+         }
+        
+        }
+    
 
     pub async fn verify_password(username: &str, password: &str) -> SurrealResult<Option<User>> {
         let db = Database::get_connection();
@@ -117,6 +135,8 @@ impl UserDatabase {
         // Execute the query
         let mut resp = conn.query(query).bind(vars).await?;
         let results: Option<User> = resp.take(0)?;
+
+        info!("password verified for {}.", results.as_ref().unwrap().username);
 
         Ok(results)
 

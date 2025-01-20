@@ -6,6 +6,8 @@ import { User, Lock, Mail, Github, Chrome } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 import { useRouter } from "next/navigation";
 import { invoke } from "@tauri-apps/api/core";
+import { useAuthStore } from "@/store/auth-store";
+import { User as UserType } from "@/types/auth";
 
 export default function SignUpPage() {
   const [username, setUsername] = useState("");
@@ -14,6 +16,7 @@ export default function SignUpPage() {
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const { login } = useAuthStore();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -41,6 +44,14 @@ export default function SignUpPage() {
         .catch((error) => {
           console.error(error);
         });
+
+      const userData: UserType = {
+        username: username,
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+      };
+      login(userData);
 
       router.push("/dashboard");
     } catch (error) {
