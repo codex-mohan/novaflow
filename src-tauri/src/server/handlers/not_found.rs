@@ -13,7 +13,7 @@ pub struct ErrorResponse {
 pub async fn not_found_handler() -> (StatusCode, Json<ErrorResponse>) {
     let error_response = ErrorResponse {
         error: "404".to_string(),
-        message: "Page Not Found".to_string(),
+        message: "From axum: Page Not Found".to_string(),
     };
 
     (StatusCode::NOT_FOUND, Json(error_response))

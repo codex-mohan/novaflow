@@ -10,6 +10,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Image from "next/image";
 import {
+  Play,
   Copy,
   Check,
   Download,
@@ -20,18 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AttachmentType } from "@/types/file";
-
-// // Import only necessary languages for syntax highlighting
-// import jsx from "react-syntax-highlighter/dist/esm/languages/prism/jsx";
-// import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
-// import python from "react-syntax-highlighter/dist/esm/languages/prism/python";
-// import css from "react-syntax-highlighter/dist/esm/languages/prism/css";
-
-// // Register languages
-// SyntaxHighlighter.registerLanguage("jsx", jsx);
-// SyntaxHighlighter.registerLanguage("javascript", javascript);
-// SyntaxHighlighter.registerLanguage("python", python);
-// SyntaxHighlighter.registerLanguage("css", css);
 
 // KaTeX styles
 import "katex/dist/katex.min.css";
@@ -143,6 +132,7 @@ const ImageBlock = memo(
         <Image
           src={content}
           alt={metadata?.alt || "Message image"}
+          onError={(e) => (e.currentTarget.src = "/fallback-image.png")}
           width={400}
           height={300}
           className="rounded-lg max-w-full h-auto"
@@ -237,6 +227,14 @@ const ChatControls = memo(
       return (
         <div className="mt-2 flex space-x-2 justify-end align-baseline">
           <Button
+            variant={"ghost"}
+            size="icon"
+            title="Continue Generation"
+            className="h-4 w-4 bg-transparent hover:bg-[#313244] self-end"
+          >
+            <Play className="h-4 w-4" />
+          </Button>
+          <Button
             variant="ghost"
             size="icon"
             title="Copy Generation"
@@ -260,7 +258,7 @@ const ChatControls = memo(
           >
             <Settings className="h-4 w-4" />
           </Button>
-          <div className="text-xs text-[#a1a1aa] mt-1 self-end">
+          <div className="text-xs text-[#a1a1aa] mt-1 self-end uppercase">
             {new Date(timestamp).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
@@ -287,7 +285,7 @@ const ChatControls = memo(
           >
             <RefreshCcw className="h-4 w-4" />
           </Button>
-          <div className="text-xs text-[#a1a1aa] mt-1 self-end">
+          <div className="text-xs text-[#a1a1aa] mt-1 self-end uppercase">
             {new Date(timestamp).toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",

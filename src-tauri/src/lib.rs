@@ -10,7 +10,7 @@ use server::handlers;
 use std::net::SocketAddr;
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
-use tauri::{AppHandle, Manager, State};
+use tauri::{generate_context, AppHandle, Manager, State};
 use tokio::time::{sleep, Duration};
 use tracing::info;
 
@@ -104,7 +104,8 @@ async fn set_complete(
 
 // An async function that does some heavy setup task
 async fn setup_backend(app: AppHandle) -> Result<(), ()> {
-    // Setup the actual backend and fake loading for  3 seconds
+    // Setup the actual backend and fake loading for 8 seconds
+    info!("Starting backend setup task...");
     tauri::async_runtime::spawn(async move {
         let app = server::routes::all_routes()
             .await

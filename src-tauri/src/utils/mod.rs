@@ -1,4 +1,5 @@
 pub mod llms;
+pub mod tools;
 
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _; // For the encode method

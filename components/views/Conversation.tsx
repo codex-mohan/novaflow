@@ -31,6 +31,8 @@ import { useMessageStore } from "@/store/messages-store";
 import { invoke } from "@tauri-apps/api/core";
 import { Conversation as ConversationType } from "@/types/conversation";
 
+import { Agent } from "@/lib/agent";
+
 type HistoryType = {
   message_id: string;
   role: "user" | "assistant" | "system";
@@ -52,6 +54,10 @@ export default function Conversation() {
   const { getUser } = useAuthStore();
   const { toast } = useToast();
   const { models, setModels } = useModelsStore();
+
+  // console.log("AI is being created.");
+  // const AI = new Agent({ model: "ollama", settings: { temperature: 0.8 } });
+  // console.log("AI has been created.");
 
   // Ref to track the latest assistant message during streaming
   const assistantMessageRef = useRef<Message | null>(null);
@@ -91,6 +97,7 @@ export default function Conversation() {
         console.log("This runs after 2 seconds");
       }, 2000); // 2000 milliseconds = 2 seconds
       console.log("loaded messages: ", JSON.stringify(messages));
+      setMessages(messages);
     } else {
       console.log("No messages to load");
       setMessages([]); // Clear messages if no conversation is selected
@@ -212,12 +219,6 @@ export default function Conversation() {
 
     try {
       console.log("messages at submit: ", messages);
-      history = messages.map((msg) => ({
-        message_id: msg.message_id,
-        role: msg.role,
-        contents: msg.contents,
-        timestamp: msg.timestamp.toISOString(),
-      }));
 
       const shortTermHistory = messages.map((msg) => ({
         role: msg.role,
@@ -226,7 +227,7 @@ export default function Conversation() {
       }));
 
       const payload = {
-        model: "llama3.2-vision",
+        model: "deepseek-r1:7b",
         messages: [
           { role: "system", content: systemMessage },
           ...shortTermHistory,
@@ -236,6 +237,22 @@ export default function Conversation() {
             images: attachments.map((a) => a.content),
           },
         ],
+        options: {
+          top_k: 20,
+          top_p: 0.9,
+          min_p: 0.0,
+          typical_p: 0.7,
+          repeat_last_n: 33,
+          temperature: 0.8,
+          repeat_penalty: 1.2,
+          presence_penalty: 1.5,
+          frequency_penalty: 1.0,
+          mirostat: 1,
+          mirostat_tau: 0.8,
+          mirostat_eta: 0.6,
+          numa: false,
+          num_ctx: 16000,
+        },
       };
 
       console.log("Sending payload:", payload);
@@ -258,10 +275,10 @@ export default function Conversation() {
       let buffer = "";
 
       while (!done) {
-        console.log("outer loop");
         const { value, done: streamDone } = await reader.read();
         done = streamDone;
         const chunk = new TextDecoder("utf-8").decode(value);
+        console.log("stream done: ", streamDone, "chunk: ", chunk);
         buffer += chunk;
 
         // Process the buffer for JSON objects
@@ -293,14 +310,6 @@ export default function Conversation() {
           }
         }
       }
-      if (messages.length !== 0) {
-        console.log(
-          "saving message to database for conversation id: ",
-          currentConversationId,
-          history
-        );
-        await saveToDatabase(history); // Save the message to the database
-      }
     } catch (error) {
       console.error(error);
       toast({
@@ -309,6 +318,18 @@ export default function Conversation() {
       });
     } finally {
       setIsStreaming(false); // Stop streaming
+      history = messages.map((msg) => ({
+        message_id: msg.message_id,
+        role: msg.role,
+        contents: msg.contents,
+        timestamp: msg.timestamp.toISOString(),
+      }));
+      console.log(
+        "saving message to database for conversation id: ",
+        currentConversationId,
+        history
+      );
+      await saveToDatabase(history); // Save the message to the database
       assistantMessageRef.current = null; // Reset the ref
       abortControllerRef.current = null; // Reset the AbortController
     }
@@ -369,10 +390,10 @@ export default function Conversation() {
   useEffect(() => {
     const predefinedModels = [
       "llama3.2-vision",
-      "qwen2.5-vl",
+      "qwen2-vl",
       "mistral",
-      "command-r",
-      "hermes-3.5",
+      "deepseek-r1:7b",
+      "deepseek-r1:14b",
     ];
     setModels(predefinedModels);
   }, [setModels]);

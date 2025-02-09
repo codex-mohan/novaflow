@@ -1,3 +1,5 @@
+"use client";
+
 import { TavilySearchResults } from "@langchain/community/tools/tavily_search";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatOllama } from "@langchain/ollama";
@@ -12,7 +14,7 @@ import { ToolNode } from "@langchain/langgraph/prebuilt";
 import {
   StateGraph,
   MessagesAnnotation,
-  MemorySaver,
+  // MemorySaver,
   START,
   END,
 } from "@langchain/langgraph";
@@ -42,11 +44,11 @@ const ChatProvider: Record<ChatProviderKey, any> = {
   groq: ChatGroq,
 };
 
-class Agent {
+export class Agent {
   public agent: any;
   private tools: any[];
   private toolNode: any;
-  private memory: MemorySaver;
+  // private memory: MemorySaver;
   public model: any;
   public StateAnnotation = Annotation.Root({
     messages: Annotation<BaseMessageLike[]>({
@@ -56,12 +58,14 @@ class Agent {
 
   constructor(private provider: { model: ChatProviderKey; settings: any }) {
     this.tools = [];
-    this.memory = new MemorySaver();
+    // this.memory = new MemorySaver();
 
     // Ensure that the provider key is valid and map it to the corresponding provider
     const modelKey = this.provider.model; // This is of type ProviderKey
     if (modelKey in ChatProvider) {
-      this.model = ChatProvider[modelKey as ChatProviderKey](provider.settings); // No error now
+      this.model = new ChatProvider[modelKey as ChatProviderKey](
+        provider.settings
+      ); // No error now
     } else {
       throw new Error(`Invalid provider model: ${modelKey}`);
     }
@@ -127,6 +131,6 @@ class Agent {
       .addConditionalEdges("agent", this.routeMessage)
       .addEdge("tools", "agent");
 
-    this.agent = workflow.compile()
+    this.agent = workflow.compile();
   }
 }

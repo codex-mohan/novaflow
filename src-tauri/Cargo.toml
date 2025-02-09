@@ -44,6 +44,10 @@ sysinfo = "0.32.0"
 base64 = "0.22.1"
 futures = "0.3.31"
 langchain_rs = "0.0.2"
+chrono = "0.4.39"
+langchain-rust = { git = "https://github.com/SeseMueller/langchain-rust", branch = "fix-1", features = ["ollama", "qdrant", "surrealdb"] }
+futures-util = "0.3.31"
+tokio-stream = "0.1.17"
 
 [profile.dev]
 opt-level = 0   # No optimization (faster builds)
