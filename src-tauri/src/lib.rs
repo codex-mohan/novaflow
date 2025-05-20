@@ -5,13 +5,9 @@ mod db;
 mod server;
 mod utils;
 
-use axum;
-use server::handlers;
-use std::net::SocketAddr;
 use std::sync::Mutex;
 use tauri::async_runtime::spawn;
 use tauri::{AppHandle, Manager, State};
-use tokio::time::{sleep, Duration};
 use tracing::info;
 
 use cuda_setup::run_cuda_setup;
@@ -21,7 +17,6 @@ use utils::start_resource_monitor;
 // setup related tasks
 struct SetupState {
     frontend_task: bool,
-    backend_task: bool,
     cuda_task: bool,
 }
 
@@ -35,7 +30,6 @@ pub fn run() {
         // We need write access to it so we wrap it in a `Mutex`
         .manage(Mutex::new(SetupState {
             frontend_task: false,
-            backend_task: false,
             cuda_task: false,
         }))
         // Add the plugins we want to use
@@ -52,7 +46,6 @@ pub fn run() {
         // Runs before the main loop, so no windows are yet created
         .setup(|app| {
             // Spawn both setup tasks
-            spawn(setup_backend(app.handle().clone()));
             spawn(cuda_setup(app.handle().clone()));
             spawn(start_resource_monitor(app.handle().clone()));
             // The hook expects an Ok result
@@ -79,12 +72,11 @@ async fn set_complete(
     let mut state_lock = state.lock().unwrap();
     match task.as_str() {
         "frontend" => state_lock.frontend_task = true,
-        "backend" => state_lock.backend_task = true,
         "cuda" => state_lock.cuda_task = true,
         _ => panic!("invalid task completed!"),
     }
     // Check if all tasks are completed
-    if state_lock.backend_task && state_lock.cuda_task {
+    if state_lock.frontend_task && state_lock.cuda_task {
         // Setup is complete, we can close the splashscreen
         // and unhide the main window!
         info!("All tasks completed!");
@@ -93,33 +85,6 @@ async fn set_complete(
         splash_window.close().unwrap();
         main_window.show().unwrap();
     }
-    Ok(())
-}
-
-// An async function that does some heavy setup task
-async fn setup_backend(app: AppHandle) -> Result<(), ()> {
-    // Setup the actual backend and fake loading for  3 seconds
-    tauri::async_runtime::spawn(async move {
-        let app = server::routes::all_routes()
-            .await
-            .fallback(handlers::not_found::not_found_handler);
-
-        // Start the Axum server
-        let addr = SocketAddr::from(([127, 0, 0, 1], 8920));
-        info!("Axum server listening on {}", addr);
-        let listener = tokio::net::TcpListener::bind("0.0.0.0:8920").await.unwrap();
-        axum::serve(listener, app).await.unwrap();
-        info!("Axum Server started");
-    });
-    info!("sleeping for 8 seconds");
-    sleep(Duration::from_secs(8)).await;
-    info!("Backend setup task completed!");
-    set_complete(
-        app.clone(),
-        app.state::<Mutex<SetupState>>(),
-        "backend".to_string(),
-    )
-    .await?;
     Ok(())
 }
 
