@@ -81,6 +81,7 @@ const config: Config = {
         br: "#2f2f4b",
         "font-hover": "#f9eeff",
         node: "#27273f",
+        border: "#96859f",
       },
       light: {
         base: "#f0d5ff",

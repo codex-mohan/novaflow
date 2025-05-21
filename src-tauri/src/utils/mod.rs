@@ -1,5 +1,3 @@
-pub mod llms;
-
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine as _; // For the encode method
 use image::{DynamicImage, ImageFormat};
@@ -66,75 +64,75 @@ struct statsPayload {
     vram: f32,
 }
 
-pub async fn start_resource_monitor(app: AppHandle) {
-    // Spawn a background task to monitor system resources
-    tauri::async_runtime::spawn(async move {
-        loop {
-            // Get system stats
-            let stats = get_system_stats();
+// pub async fn start_resource_monitor(app: AppHandle) {
+//     // Spawn a background task to monitor system resources
+//     tauri::async_runtime::spawn(async move {
+//         loop {
+//             // Get system stats
+//             let stats = get_system_stats();
 
-            // Emit the stats to the frontend
-            app.emit("resource-stats", stats).unwrap();
+//             // Emit the stats to the frontend
+//             app.emit("resource-stats", stats).unwrap();
 
-            // Wait for a specified duration before the next update
-            sleep(std::time::Duration::from_secs(2)).await; // Using Tokio's sleep
-        }
-    });
-}
+//             // Wait for a specified duration before the next update
+//             sleep(std::time::Duration::from_secs(2)).await; // Using Tokio's sleep
+//         }
+//     });
+// }
 
-fn get_gpu_stats() -> (f32, f32) {
-    let output = Command::new("nvidia-smi")
-        .arg("--query-gpu=utilization.gpu,memory.used,memory.total")
-        .arg("--format=csv,noheader,nounits")
-        .output()
-        .expect("Failed to execute nvidia-smi");
+// fn get_gpu_stats() -> (f32, f32) {
+//     let output = Command::new("nvidia-smi")
+//         .arg("--query-gpu=utilization.gpu,memory.used,memory.total")
+//         .arg("--format=csv,noheader,nounits")
+//         .output()
+//         .expect("Failed to execute nvidia-smi");
 
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    let mut gpu_usage = 0.0;
-    let mut vram_usage = 0.0;
+//     let stdout = String::from_utf8_lossy(&output.stdout);
+//     let mut gpu_usage = 0.0;
+//     let mut vram_usage = 0.0;
 
-    for line in stdout.lines() {
-        let values: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
-        if let [gpu, mem_used, mem_total] = &values[..] {
-            gpu_usage = gpu.parse::<f32>().unwrap_or(0.0);
-            let mem_used: f32 = mem_used.parse().unwrap_or(0.0);
-            let mem_total: f32 = mem_total.parse().unwrap_or(0.0);
-            vram_usage = (mem_used / mem_total) * 100.0;
-        }
-    }
-    (gpu_usage, vram_usage)
-}
+//     for line in stdout.lines() {
+//         let values: Vec<&str> = line.split(',').map(|s| s.trim()).collect();
+//         if let [gpu, mem_used, mem_total] = &values[..] {
+//             gpu_usage = gpu.parse::<f32>().unwrap_or(0.0);
+//             let mem_used: f32 = mem_used.parse().unwrap_or(0.0);
+//             let mem_total: f32 = mem_total.parse().unwrap_or(0.0);
+//             vram_usage = (mem_used / mem_total) * 100.0;
+//         }
+//     }
+//     (gpu_usage, vram_usage)
+// }
 
-pub fn get_system_stats() -> statsPayload {
-    let mut sys = System::new_all();
-    sys.refresh_all();
+// pub fn get_system_stats() -> statsPayload {
+//     let mut sys = System::new_all();
+//     sys.refresh_all();
 
-    let mut s =
-        System::new_with_specifics(RefreshKind::new().with_cpu(CpuRefreshKind::everything()));
+//     let mut s =
+//         System::new_with_specifics(RefreshKind::new().with_cpu(CpuRefreshKind::everything()));
 
-    // Wait a bit because CPU usage is based on diff.
-    std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-    // Refresh CPUs again to get actual value.
-    sys.refresh_cpu_all();
+//     // Wait a bit because CPU usage is based on diff.
+//     std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+//     // Refresh CPUs again to get actual value.
+//     sys.refresh_cpu_all();
 
-    // CPU Usage (average across all cores)
-    let cpu_usage =
-        sys.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / sys.cpus().len() as f32;
+//     // CPU Usage (average across all cores)
+//     let cpu_usage =
+//         sys.cpus().iter().map(|cpu| cpu.cpu_usage()).sum::<f32>() / sys.cpus().len() as f32;
 
-    // Memory Usage
-    let total_memory = sys.total_memory() as f32;
-    let used_memory = (sys.total_memory() - sys.available_memory()) as f32;
-    let memory_usage = (used_memory / total_memory) * 100.0;
+//     // Memory Usage
+//     let total_memory = sys.total_memory() as f32;
+//     let used_memory = (sys.total_memory() - sys.available_memory()) as f32;
+//     let memory_usage = (used_memory / total_memory) * 100.0;
 
-    // GPU Info (example using nvidia-smi, you'll need to add nvidia-smi crate)
-    // GPU Usage
+//     // GPU Info (example using nvidia-smi, you'll need to add nvidia-smi crate)
+//     // GPU Usage
 
-    let (gpu_usage, vram_usage) = get_gpu_stats();
-    info!("Vram Usage: {}", vram_usage);
+//     let (gpu_usage, vram_usage) = get_gpu_stats();
+//     info!("Vram Usage: {}", vram_usage);
 
-    statsPayload {
-        cpu: cpu_usage,
-        ram: memory_usage,
-        vram: vram_usage,
-    }
-}
+//     statsPayload {
+//         cpu: cpu_usage,
+//         ram: memory_usage,
+//         vram: vram_usage,
+//     }
+// }

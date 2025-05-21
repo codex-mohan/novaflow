@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+// import { getCurrentWebviewWindow, WebviewWindow } from "@tauri-apps/api/webviewWindow"; // No longer needed for window switching
 
 export default function SplashScreen() {
   const [isLoading, setIsLoading] = useState(true);
@@ -118,6 +119,7 @@ export default function SplashScreen() {
           clearInterval(interval);
           setTimeout(() => {
             setIsLoading(false);
+            // Window switching is now handled by the backend after a delay
           }, 300); // Allow a short delay before closing
         }
         return newProgress;

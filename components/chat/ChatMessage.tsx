@@ -21,7 +21,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // Don't forget to import styles for KaTeX
-import "katex/dist/katex.min.css";
 
 interface MessageContent {
   type: "text" | "image" | "file";
