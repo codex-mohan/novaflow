@@ -11,9 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Provider, Ollama } from "@/lib/provider";
 import { ChatInput } from "@/components/chat/ChatInput"; // Import ChatInput
 
-// Don't forget to import styles for KaTeX
-import GradientButton from "../ui/GradientButton";
-
 type MessageContent = {
   type: "text";
   content: string;
