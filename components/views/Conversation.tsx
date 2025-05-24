@@ -2,13 +2,10 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { nanoid } from "nanoid";
-import { Button } from "@/components/ui/button";
 import ScrollArea from "@/components/ui/scroll-area";
-import { Send, StopCircle } from "lucide-react";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { AttachmentMenu } from "@/components/menus/AttachmentMenu";
 import { useToast } from "@/hooks/use-toast";
-import { Provider, Ollama } from "@/lib/provider";
 import { ChatInput } from "@/components/chat/ChatInput"; // Import ChatInput
 
 type MessageContent = {
@@ -41,7 +38,6 @@ export default function Conversation() {
   const [isStreaming, setIsStreaming] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const provider = new Ollama();
 
   useEffect(() => {
     const scrollViewport = scrollAreaRef.current?.querySelector(
@@ -102,7 +98,7 @@ export default function Conversation() {
         });
 
         const payload = {
-          model: "llama3.2-vision",
+          model: "qwen3",
           messages: [
             { role: "user", content: systemMessage },
             ...history.map((msg) => ({

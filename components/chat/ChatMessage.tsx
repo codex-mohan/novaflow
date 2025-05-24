@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, memo } from "react";
 import remarkRehype from "remark-rehype";
 import ReactMarkdown from "react-markdown";
-import rehypeKatex from "rehype-katex";
+import rehypeKatex from "rehype-mathjax";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
@@ -38,7 +38,7 @@ interface ChatMessageProps {
   timestamp: Date;
 }
 
-const CodeBlock = ({
+const CodeBlock = memo(({
   content,
   language,
 }: {
@@ -90,7 +90,7 @@ const CodeBlock = ({
       </SyntaxHighlighter>
     </div>
   );
-};
+});
 
 const ImageBlock = ({
   content,
@@ -136,7 +136,7 @@ const ImageBlock = ({
   );
 };
 
-const ContentRenderer = ({
+const ContentRenderer = memo(({
   content,
   role,
 }: {
@@ -172,7 +172,7 @@ const ContentRenderer = ({
       />
     );
   }
-};
+});
 
 const ChatControls = ({
   role,
@@ -246,7 +246,7 @@ const ChatControls = ({
   }
 };
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({
+export const ChatMessage: React.FC<ChatMessageProps> = memo(({
   role,
   contents,
   timestamp,
@@ -296,4 +296,4 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       </div>
     </div>
   );
-};
+});
