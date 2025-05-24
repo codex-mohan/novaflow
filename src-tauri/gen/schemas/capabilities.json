@@ -1,1 +1,66 @@
-{"default":{"identifier":"default","description":"enables the default permissions","local":true,"windows":["main"],"permissions":["core:default","core:window:allow-start-dragging","core:window:allow-close","core:window:allow-maximize","core:window:allow-toggle-maximize","core:window:allow-get-all-windows","core:window:allow-theme","core:window:allow-set-theme","core:window:allow-minimize","core:window:default","log:default","fs:default","fs:allow-read","fs:allow-write","fs:allow-open","fs:allow-write-file","fs:allow-read-file","fs:allow-read-dir","fs:allow-write-text-file","fs:allow-create","fs:allow-read-text-file","fs:allow-remove","fs:allow-rename","fs:allow-video-read","fs:allow-video-write","fs:allow-video-meta","fs:allow-audio-read","fs:allow-audio-write","fs:allow-audio-meta","fs:allow-picture-meta","fs:allow-picture-write","fs:allow-picture-read","fs:allow-copy-file","fs:allow-home-read","fs:allow-home-write",{"identifier":"fs:allow-rename","deny":[{"path":"$HOME/.config/**"}]},{"identifier":"fs:allow-exists","allow":[{"path":"$APPDATA/*"}]}]}}
+{
+  "default": {
+    "identifier": "default",
+    "description": "enables the default permissions",
+    "local": true,
+    "windows": ["main"],
+    "permissions": [
+      "core:default",
+      "core:window:allow-start-dragging",
+      "core:window:allow-close",
+      "core:window:allow-maximize",
+      "core:window:allow-toggle-maximize",
+      "core:window:allow-get-all-windows",
+      "core:window:allow-theme",
+      "core:window:allow-set-theme",
+      "core:window:allow-minimize",
+      "core:window:default",
+      "log:default",
+      "fs:default",
+      "fs:allow-read",
+      "fs:allow-write",
+      "fs:allow-open",
+      "fs:allow-write-file",
+      "fs:allow-read-file",
+      "fs:allow-read-dir",
+      "fs:allow-write-text-file",
+      "fs:allow-create",
+      "fs:allow-read-text-file",
+      "fs:allow-remove",
+      "fs:allow-rename",
+      "fs:allow-video-read",
+      "fs:allow-video-write",
+      "fs:allow-video-meta",
+      "fs:allow-audio-read",
+      "fs:allow-audio-write",
+      "fs:allow-audio-meta",
+      "fs:allow-picture-meta",
+      "fs:allow-picture-write",
+      "fs:allow-picture-read",
+      "fs:allow-copy-file",
+      "fs:allow-home-read",
+      "fs:allow-home-write",
+      {
+        "identifier": "fs:allow-rename",
+        "deny": [{ "path": "$HOME/.config/**" }]
+      },
+      { "identifier": "fs:allow-exists", "allow": [{ "path": "$APPDATA/*" }] },
+      "shell:default",
+      {
+        "identifier": "shell:allow-execute",
+        "allow": [
+          {
+            "args": ["-c", { "validator": "\\S+" }],
+            "cmd": "sh",
+            "name": "exec-sh"
+          },
+          {
+            "args": [{ "validator": "\\S+" }],
+            "cmd": "surrealdb",
+            "name": "exec-surrealdb"
+          }
+        ]
+      }
+    ]
+  }
+}

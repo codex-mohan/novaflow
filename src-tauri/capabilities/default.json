@@ -2,9 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "enables the default permissions",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:default",
     "core:window:allow-start-dragging",
@@ -54,6 +52,31 @@
       "allow": [
         {
           "path": "$APPDATA/*"
+        }
+      ]
+    },
+    "shell:default",
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "exec-sh",
+          "cmd": "sh",
+          "args": [
+            "-c",
+            {
+              "validator": "\\S+"
+            }
+          ]
+        },
+        {
+          "name": "exec-surrealdb",
+          "cmd": "surrealdb",
+          "args": [
+            {
+              "validator": "\\S+"
+            }
+          ]
         }
       ]
     }
