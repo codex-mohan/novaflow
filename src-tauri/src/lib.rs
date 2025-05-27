@@ -10,7 +10,7 @@ use tracing::info;
 
 use cuda_setup::run_cuda_setup;
 use utils::get_database_path; // Import get_database_path
-// use utils::start_resource_monitor;
+                              // use utils::start_resource_monitor;
 
 // Our main entrypoint in a version 2 mobile compatible app
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

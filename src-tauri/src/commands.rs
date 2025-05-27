@@ -1,11 +1,8 @@
 use crate::utils::get_database_path;
-use serde_json::json;
-use std::result::Result::Ok;
 use tauri::{AppHandle, Emitter, EventTarget};
+use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
-use tracing::{error, info};
-use tokio::io::AsyncBufReadExt; // Import AsyncBufReadExt
-use tokio::io::BufReader; // Import BufReader
+use tracing::{error, info}; // Import BufReader
 
 #[tauri::command]
 pub fn open_file(app: AppHandle, path: std::path::PathBuf) {
@@ -23,7 +20,7 @@ pub fn start_surrealdb(app: AppHandle, db_path: String) {
 
     let (mut rx, mut child) = app
         .shell()
-        .sidecar("surrealdb")
+        .sidecar("surreal")
         .unwrap()
         .args([
             "start",
@@ -33,11 +30,9 @@ pub fn start_surrealdb(app: AppHandle, db_path: String) {
             "root",
             "--pass",
             &surreal_db_password,
-            "--auth",
             "--deny-guests",
             "--deny-scripting",
             "--deny-funcs",
-            "\"http::*\"",
             "--no-banner",
             "--log",
             "debug",
@@ -46,43 +41,47 @@ pub fn start_surrealdb(app: AppHandle, db_path: String) {
         .spawn()
         .expect("Failed to start surrealdb");
 
-    // Spawn a task to read and log output from the surrealdb process
+    info!("SurrealDB started.");
+    dbg!(
+        "Spawned Tauri sidecar process `surreal` with PID: {}",
+        child.pid()
+    );
+
     tauri::async_runtime::spawn(async move {
-        let stdout = child.stdout.take().expect("Failed to take stdout");
-        let stderr = child.stderr.take().expect("Failed to take stderr");
+        // read events such as stdout
+        while let Some(event) = rx.recv().await {
+            // Re-print the stdout. A good place to put the output to a dedicated output
+            // file or something along those lines.
+            if let CommandEvent::Stdout(line) = &event {
+                println!(" ++-> surreal: {:?}", String::from_utf8(line.clone()));
+            }
 
-        let mut stdout_reader = BufReader::new(stdout).lines();
-        let mut stderr_reader = BufReader::new(stderr).lines();
+            // Print pring logs, errors, etc. from surreal to the console
+            // A smarter solution would of course be to dump them into some dedicated
+            // log file. This is the place to do it :)
+            if let CommandEvent::Stderr(line) = &event {
+                println!(" ++-> surreal: {:?}", String::from_utf8(line.clone()));
+            }
 
-        loop {
-            tokio::select! {
-                line = stdout_reader.next_line() => {
-                    match line {
-                        Ok(Some(line)) => info!("SurrealDB stdout: {}", line),
-                        Ok(None) => break, // EOF
-                        Err(e) => {
-                            error!("Error reading SurrealDB stdout: {}", e);
-                            break;
-                        }
-                    }
-                }
-                line = stderr_reader.next_line() => {
-                     match line {
-                        Ok(Some(line)) => error!("SurrealDB stderr: {}", line),
-                        Ok(None) => break, // EOF
-                        Err(e) => {
-                            error!("Error reading SurrealDB stderr: {}", e);
-                            break;
-                        }
-                    }
-                }
-                // Add a small delay to prevent tight loop if both streams are empty
-                _ = tokio::time::sleep(tokio::time::Duration::from_millis(10)) => {}
+            // React to the tasks' termination. In our case we can't live without the database.
+            // The process panics and that's it. However this could also be used to set some
+            // flag used to inform the frontend about the loss of connection and/or trying to
+            // restart.
+            // This will also capture a failed start (e.g. bad args)
+            if let CommandEvent::Terminated(line) = &event {
+                println!(" ++-> surreal: terminated.");
+
+                // Set `panic = 'abort'` in your build profile to make the panic global
+                // If set to unwind it will simply terminate the async task but not the entire application.
+                //
+                // Still looking for a solution that will work with the `unwind` setting.
+                //
+                // Relevant resources:
+                // * https://users.rust-lang.org/t/panic-in-tokio-task-does-not-end-the-program-execution/45731/6
+                // * https://doc.rust-lang.org/book/ch09-01-unrecoverable-errors-with-panic.html
+
+                panic!("Surreal went away :'(");
             }
         }
-
-        // Optionally wait for the child process to exit
-        let _ = child.wait().await;
-        info!("SurrealDB process exited.");
     });
 }

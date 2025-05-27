@@ -6,9 +6,9 @@ export class UserDatabase {
     /**
      * Initialize the database and set up schemas for the `user` table
      */
-    public static async initialize(db_path: string): Promise<void> {
+    public static async initialize(): Promise<void> {
         // Initialize the database connection if not already done
-        await Database.initialize(db_path, "novaflow", "users");
+        await Database.initialize("novaflow", "users");
 
         const db = Database.getConnection();
 
@@ -81,6 +81,7 @@ export class UserDatabase {
     }
 
     public static async verifyPassword(username: string, password: string): Promise<User | null> {
+        await UserDatabase.initialize();
         const db = Database.getConnection();
 
         const query =

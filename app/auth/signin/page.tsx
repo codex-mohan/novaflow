@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Mail, Lock, Chrome, Github, User2 } from "lucide-react";
 import GradientButton from "@/components/ui/GradientButton";
 import { useRouter } from "next/navigation";
-import { invoke } from "@tauri-apps/api/core";
+import { UserDatabase } from "@/lib/db/user_db";
 import { User } from "@/types/auth";
 import { useAuthStore } from "@/store/auth-store";
 import { useToast } from "@/hooks/use-toast";
@@ -24,19 +24,14 @@ export default function SignInPage() {
     console.log("submitting...");
 
     try {
-      const response = await invoke("login_user", {
-        username: username,
-        password: password,
-      });
+      const user = await UserDatabase.verifyPassword(username, password);
 
-      if (response && typeof response === "object" && "username" in response) {
-        const userData: User = response as User;
-
+      if (user) {
         if (rememberMe) {
-          useAuthStore.getState().login(userData);
+          useAuthStore.getState().login(user);
         } else {
           // For session-only storage
-          useAuthStore.getState().setUser(userData);
+          useAuthStore.getState().setUser(user);
         }
 
         toast({
@@ -45,12 +40,18 @@ export default function SignInPage() {
         });
 
         router.push("/dashboard");
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to login. Please check your credentials.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error(error);
       toast({
         title: "Error",
-        description: "Failed to login. Please check your credentials.",
+        description: "An unexpected error occurred during login.",
         variant: "destructive",
       });
     }

@@ -5,7 +5,6 @@ use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 fn main() {
     tracing_subscriber::fmt()
-        .pretty() // Enables pretty printing of logs
         .with_max_level(tracing::Level::DEBUG)
         .with_target(true) // Optionally include the logging target
         .with_thread_names(true) // Optionally include thread names
