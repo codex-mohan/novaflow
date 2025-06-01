@@ -32,7 +32,7 @@ class VectorDB:
             outputs = self.embed_images(images[i:i+self.processor_batch_size])
             embeddings.extend(outputs)
 
-    def embed_images(self, images: list[Image], include_):
+    def embed_images(self, images: list[Image], include_images: bool = False):
         batch_processed_images = self.processor.process_images(images).to(self.image_model.device)
 
         with torch.no_grad():
