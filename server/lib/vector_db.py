@@ -11,8 +11,8 @@ Embeddings: TypeAlias = list[float]
 
 
 class VectorDB:
-    def __init__(self, index:str = '', processor_batch_size: int = 10,dtype: torch.dtype = torch.bfloat16, device: str = "cuda:0"):
-        self.image_model_name = "vidore/colpali-v1.3"
+    def __init__(self, index:str = '', image_model_name: str = "vidore/colpali-v1.3",processor_batch_size: int = 10,dtype: torch.dtype = torch.bfloat16, device: str = "cuda:0"):
+        self.image_model_name = image_model_name
         self.image_model = cast(ColPali, ColPali.from_pretrained(self.image_model_name, dtype=dtype, device=device))
         self.processor = cast(ColPaliProcessor, ColPaliProcessor.from_pretrained(self.image_model_name))
         self.index = None

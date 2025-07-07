@@ -17,6 +17,11 @@ export class Database {
       // Connect to the database
       const surreal = new Surreal();
       await surreal.connect(`http://127.0.0.1:8877`);
+      // Authenticate with the root user and password
+      await surreal.signin({
+        username: "root",
+        password: "your_surreal_db_password", // Replace with actual password source
+      });
       await surreal.use({ namespace, database });
 
       db = surreal;

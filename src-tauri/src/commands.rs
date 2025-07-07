@@ -31,12 +31,10 @@ pub fn start_surrealdb(app: AppHandle, db_path: String) {
             "--pass",
             &surreal_db_password,
             "--deny-guests",
-            "--deny-scripting",
-            "--deny-funcs",
             "--no-banner",
             "--log",
             "debug",
-            format!("file:{}", db_path).as_str(),
+            format!("rocksdb:{}", db_path).as_str(),
         ])
         .spawn()
         .expect("Failed to start surrealdb");
@@ -53,14 +51,14 @@ pub fn start_surrealdb(app: AppHandle, db_path: String) {
             // Re-print the stdout. A good place to put the output to a dedicated output
             // file or something along those lines.
             if let CommandEvent::Stdout(line) = &event {
-                println!(" ++-> surreal: {:?}", String::from_utf8(line.clone()));
+                println!(" ++-> surreal: {}", String::from_utf8_lossy(&line));
             }
 
             // Print pring logs, errors, etc. from surreal to the console
             // A smarter solution would of course be to dump them into some dedicated
             // log file. This is the place to do it :)
             if let CommandEvent::Stderr(line) = &event {
-                println!(" ++-> surreal: {:?}", String::from_utf8(line.clone()));
+                println!(" ++-> surreal: {}", String::from_utf8_lossy(&line));
             }
 
             // React to the tasks' termination. In our case we can't live without the database.
